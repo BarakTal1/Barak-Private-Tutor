@@ -1,1 +1,125 @@
 @import 'tailwindcss';
+
+/* Colors, radii and shadows of the "Bright Adventure" design (design file: Style Guide.dc.html).
+   The chat background is plain: the design's dotted pattern was removed on purpose. */
+:root {
+  --bg: #eef3ff;
+  --surf: #ffffff;
+  --surf2: #e8eefc;
+  --chat: #f3f6ff;
+  --ink: #15204a;
+  --ink2: #4a5683;
+  --line: rgba(21, 32, 74, 0.1);
+  --line-strong: rgba(21, 32, 74, 0.2);
+  --p: #2456e5;
+  --p-ink: #173c9e;
+  --p-soft: #e2eaff;
+  --on-p: #ffffff;
+  --acc: #ffc431;
+  --acc-on: #3a2800;
+  --acc-soft: #fff3cc;
+  --acc-ink: #7a5300;
+  --ok: #12a46a;
+  --ok-soft: #dcf5e9;
+  --ok-ink: #0b6141;
+  --ok-line: #a8e3c8;
+  --hint: #ffd45c;
+  --hint-soft: #fff6d6;
+  --hint-ink: #6b4e00;
+  --hint-line: #f5dc8e;
+  --info-soft: #e6f0ff;
+  --info-ink: #1d4b9a;
+  --info-line: #c2d5f7;
+  --err-soft: #ffeef0;
+  --err-ink: #b3304a;
+  --err-line: #f6c8d0;
+  --r: 18px;
+  --rl: 26px;
+  --sh: 0 0 0 1px rgba(21, 32, 74, 0.06), 0 2px 0 rgba(21, 32, 74, 0.05), 0 8px 20px -6px rgba(36, 86, 229, 0.14);
+  --sh-btn: 0 4px 0 #173c9e;
+  --bolt: #ffc93c;
+  --bolt-edge: #e29a00;
+  --cheek: #ffd0a8;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surf: var(--surf);
+  --color-surf2: var(--surf2);
+  --color-chat: var(--chat);
+  --color-ink: var(--ink);
+  --color-ink2: var(--ink2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-p: var(--p);
+  --color-p-ink: var(--p-ink);
+  --color-p-soft: var(--p-soft);
+  --color-on-p: var(--on-p);
+  --color-acc: var(--acc);
+  --color-acc-on: var(--acc-on);
+  --color-acc-soft: var(--acc-soft);
+  --color-acc-ink: var(--acc-ink);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-ok-ink: var(--ok-ink);
+  --color-ok-line: var(--ok-line);
+  --color-hint: var(--hint);
+  --color-hint-soft: var(--hint-soft);
+  --color-hint-ink: var(--hint-ink);
+  --color-hint-line: var(--hint-line);
+  --color-info-soft: var(--info-soft);
+  --color-info-ink: var(--info-ink);
+  --color-info-line: var(--info-line);
+  --color-err-soft: var(--err-soft);
+  --color-err-ink: var(--err-ink);
+  --color-err-line: var(--err-line);
+  --radius-ctl: var(--r);
+  --radius-card: var(--rl);
+  --shadow-card: var(--sh);
+  --shadow-btn: var(--sh-btn);
+  --font-sans: 'Rubik Variable', system-ui, sans-serif;
+  --font-math: 'STIX Two Text', 'Times New Roman', serif;
+  --ease-out-soft: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    line-height: 1.7;
+  }
+  /* Hebrew reads best with a taller line and no letter spacing or italics. */
+  :lang(he) {
+    letter-spacing: 0;
+    font-style: normal;
+  }
+  :focus-visible {
+    outline: 3px solid var(--p);
+    outline-offset: 2px;
+  }
+}
+
+/* Animations of Barak. The component turns them off when the user asks for less motion. */
+@keyframes tt-bob { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-3px) } }
+@keyframes tt-jump {
+  0% { transform: translateY(0) scale(1) }
+  30% { transform: translateY(-14px) scale(1.04, 0.96) }
+  60% { transform: translateY(0) scale(1.06, 0.92) }
+  80% { transform: translateY(-3px) }
+  100% { transform: none }
+}
+@keyframes tt-lean { 0%, 100% { transform: rotate(-7deg) translateX(2px) } 50% { transform: rotate(-10deg) translateX(4px) } }
+@keyframes tt-breathe { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.03, 0.97) } }
+@keyframes tt-dance { 0%, 100% { transform: rotate(-8deg) translateY(0) } 50% { transform: rotate(8deg) translateY(-6px) } }
+@keyframes tt-talk { 0% { transform: scaleY(0.55) } 100% { transform: scaleY(1) } }
+@keyframes tt-blink { 0%, 92%, 100% { transform: scaleY(1) } 95% { transform: scaleY(0.1) } }
+@keyframes tt-wave { 0%, 100% { transform: rotate(0) } 50% { transform: rotate(-22deg) } }
+@keyframes tt-z { 0% { opacity: 0; transform: translate(0, 0) scale(0.6) } 30% { opacity: 1 } 100% { opacity: 0; transform: translate(8px, -14px) scale(1.1) } }
+@keyframes tt-dot { 0%, 100% { opacity: 0.25 } 50% { opacity: 1 } }
+@keyframes tt-spark { 0%, 100% { opacity: 0; transform: scale(0.4) } 50% { opacity: 1; transform: scale(1) } }
