@@ -142,3 +142,4 @@
 .katex { direction: ltr; unicode-bidi: isolate; }
 :not(.katex-display) > .katex { display: inline-block; white-space: nowrap; }
 .katex-display { overflow-x: auto; overflow-y: hidden; }
+@keyframes rise { from { opacity: 0; transform: translateY(12px) } }

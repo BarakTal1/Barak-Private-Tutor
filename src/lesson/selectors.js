@@ -58,3 +58,12 @@ export function hintLevelFor(state, messageId) {
   if (before?.role !== 'student' || before.kind !== 'hint') return 0
   return state.messages.slice(0, index).filter((m) => m.kind === 'hint' && m.stepId === before.stepId).length
 }
+
+const RECAP_BULLETS = 3
+
+// Up to 3 bullets for the end of the lesson: the first key point of steps spread across the plan.
+export function recapBullets(plan) {
+  const points = plan.steps.map((step) => step.keyPoints[0]).filter(Boolean)
+  if (points.length <= RECAP_BULLETS) return points
+  return Array.from({ length: RECAP_BULLETS }, (_, i) => points[Math.round((i * (points.length - 1)) / (RECAP_BULLETS - 1))])
+}
