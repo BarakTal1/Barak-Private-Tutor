@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&family=Varela+Round&family=STIX+Two+Text:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+html,body{margin:0;background:#e8e6e0}
+*{box-sizing:border-box}
+a{color:var(--p,#0b7a71)} a:hover{color:var(--p-ink,#075a53)}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--p,#0b7a71);outline-offset:2px}
+textarea::placeholder,input::placeholder{color:var(--ink2,#566468);opacity:.85}
+@keyframes pm-pop{0%{opacity:0;transform:translateY(6px) scale(.98)}100%{opacity:1;transform:none}}
+@keyframes pm-in-start{0%{opacity:0;transform:translateX(12px)}100%{opacity:1;transform:none}}
+@keyframes pm-badge{0%{opacity:0;transform:scale(.85)}60%{opacity:1;transform:scale(1.06)}100%{transform:scale(1)}}
+@keyframes pm-sparkle{0%{opacity:1;transform:translate(0,0) scale(.6)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.1)}}
+@keyframes pm-bulb{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(245,200,76,0)}50%{transform:scale(1.14) rotate(-6deg);box-shadow:0 0 0 7px rgba(245,200,76,.35),0 0 18px rgba(245,200,76,.8)}}
+@keyframes pm-pulse{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.7);opacity:0}}
+@keyframes pm-light{0%{transform:scale(.92);box-shadow:0 0 0 0 rgba(255,180,60,.8)}60%{transform:scale(1.15);box-shadow:0 0 0 8px rgba(255,180,60,0)}100%{transform:scale(1)}}
+@keyframes pm-starpop{0%{opacity:0;transform:scale(.6) rotate(-20deg)}60%{opacity:1;transform:scale(1.15) rotate(4deg)}100%{transform:none}}
+@keyframes pm-glow{0%{box-shadow:0 0 0 0 rgba(255,170,60,0)}35%{box-shadow:0 0 0 6px rgba(255,170,60,.3),0 0 26px rgba(255,170,60,.55)}100%{box-shadow:0 0 0 0 rgba(255,170,60,0)}}
+@keyframes pm-ribbon{0%{opacity:0;transform:scale(.92)}60%{opacity:1;transform:scale(1.03)}100%{transform:none}}
+@keyframes pm-wiggle{0%,100%{transform:scale(1.01) rotate(0)}25%{transform:scale(1.01) rotate(-.4deg)}75%{transform:scale(1.01) rotate(.4deg)}}
+@keyframes pm-dot{0%,70%,100%{transform:translateY(0);opacity:.35}35%{transform:translateY(-5px);opacity:1}}
+@keyframes pm-spin{to{transform:rotate(360deg)}}
+@keyframes pm-shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+@keyframes pm-check{0%{stroke-dashoffset:30}100%{stroke-dashoffset:0}}
+@keyframes pm-scale-in{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+@keyframes pm-sheet{0%{transform:translateY(100%)}100%{transform:none}}
+@keyframes pm-panel-start{0%{transform:translateX(100%)}100%{transform:none}}
+@keyframes pm-panel-end{0%{transform:translateX(-100%)}100%{transform:none}}
+@keyframes pm-fade{0%{opacity:0}100%{opacity:1}}
+@keyframes pm-recap{0%{opacity:0;transform:translateY(24px)}100%{opacity:1;transform:none}}
+@keyframes pm-caret{0%,100%{opacity:1}50%{opacity:0}}
+
+</style>
+</helmet>
+<div ref="{{ wrapRef }}" dir="rtl" lang="he" style="{{ shell }}">
+  <sc-if value="{{ chrome }}" hint-placeholder-val="{{ true }}">
+    <div style="width:100%;max-width:1330px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:center;font:500 13px/1.3 Rubik,system-ui,sans-serif;color:#2a2a2a">
+      <sc-for list="{{ toolbar }}" as="g" hint-placeholder-count="6">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="color:#6b6b6b">{{ g.label }}</span>
+          <div style="display:flex;gap:2px;padding:3px;background:#fff;border-radius:999px;border:1px solid rgba(0,0,0,.08)">
+            <sc-for list="{{ g.opts }}" as="o">
+              <button type="button" aria-pressed="{{ o.on }}" onClick="{{ o.onClick }}" style="{{ o.style }}">{{ o.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+  <div style="{{ scaleBox }}">
+    <div style="{{ scaleInner }}">
+      <div ref="{{ frameRef }}" style="{{ frameStyle }}">
+
+        <sc-if value="{{ isSetup }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;inset:0;overflow-y:auto;background:var(--bg)">
+            <header style="display:flex;align-items:center;gap:10px;padding:12px 20px;position:sticky;top:0;background:var(--bg);z-index:5">
+              <span style="font-size:14px;font-weight:500;color:var(--ink2)">לכיתה ולבית</span>
+              <span style="flex:1"></span>
+              <button type="button" onClick="{{ openSettings }}" aria-label="הגדרות ספק ה-AI" style="position:relative;display:flex;align-items:center;gap:8px;height:44px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--surf);cursor:pointer;font-weight:500;transition:transform .16s cubic-bezier(.23,1,.32,1), filter .16s ease" style-hover="background:var(--surf2)" style-active="transform:scale(.97)">
+                {{ I.sliders }}<span>הגדרות</span>
+                <sc-if value="{{ noKey }}"><span aria-hidden="true" style="position:absolute;top:8px;inset-inline-end:8px;width:9px;height:9px;border-radius:50%;background:var(--acc);border:2px solid var(--surf)"></span></sc-if>
+              </button>
+            </header>
+            <main style="display:flex;justify-content:center;padding:{{ L.pad }}">
+              <div style="width:100%;max-width:680px;display:flex;flex-direction:column;gap:28px">
+                <div style="display:flex;align-items:center;gap:20px">
+                  <dc-import name="Tutor" mood="talk" size="{{ L.heroTutor }}" rm="{{ rm }}" hint-size="84px,84px"></dc-import>
+                  <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+                    <h1 style="margin:0;font:var(--fdw) {{ L.h1 }}/1.2 var(--fd);color:var(--ink);text-wrap:balance">מלמדים אותי את הקובץ</h1>
+                    <p style="margin:0;font-size:{{ L.lead }};line-height:1.6;color:var(--ink2);text-wrap:pretty">מעלים חומר לימוד, כותבים שורה אחת, ומורה סבלני מלמד אותו צעד אחר צעד.</p>
+                  </div>
+                </div>
+
+                <section aria-labelledby="lbl-file" style="display:flex;flex-direction:column;gap:10px">
+                  <h2 id="lbl-file" style="margin:0;font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px"><span style="display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--p-soft);color:var(--p-ink);font-size:13px">1</span>הקובץ</h2>
+                  <input ref="{{ fileRef }}" type="file" onChange="{{ onPick }}" style="display:none" aria-hidden="true" tabindex="-1">
+                  <sc-if value="{{ dzShowZone }}" hint-placeholder-val="{{ true }}">
+                    <div role="button" tabindex="0" aria-label="העלאת קובץ: גררו לכאן קובץ או לחצו לבחירה" onClick="{{ pickFile }}" onKeyDown="{{ dzKey }}" onDragOver="{{ dzOver }}" onDragLeave="{{ dzLeave }}" onDrop="{{ dzDrop }}" style="{{ dzStyle }}">
+                      <span style="{{ dzIcon }}">{{ I.upload28 }}</span>
+                      <strong style="font-size:18px;font-weight:600;color:var(--ink)">{{ dzTitle }}</strong>
+                      <span style="font-size:14px;color:var(--ink2);line-height:1.6">PDF, Word, מצגת או צילום של דף · עד <bdi dir="ltr">20 MB</bdi></span>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ dzHasFile }}">
+                    <div style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:var(--rl);background:var(--surf);border:1.5px solid var(--ok-line);box-shadow:var(--sh);animation:{{ anim.pop }}">
+                      <span style="position:relative;flex:none;width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:var(--ok-soft);color:var(--ok-ink)">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" style="stroke-dasharray:30;animation:{{ anim.check }}"></path></svg>
+                      </span>
+                      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                        <bdi dir="auto" style="font-weight:600;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ fileName }}</bdi>
+                        <span style="font-size:14px;color:var(--ok-ink)"><bdi dir="ltr">{{ fileSize }}</bdi> · הקובץ מוכן</span>
+                      </div>
+                      <button type="button" onClick="{{ removeFile }}" aria-label="הסרת הקובץ" title="הסרת הקובץ" style="flex:none;width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surf);display:grid;place-items:center;cursor:pointer;color:var(--ink2)" style-hover="background:var(--surf2);color:var(--ink)">{{ I.x }}</button>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ dzHasErr }}">
+                    <div role="alert" style="display:flex;align-items:flex-start;gap:14px;padding:16px;border-radius:var(--rl);background:var(--hint-soft);border:1.5px solid var(--hint-line);animation:{{ anim.slide }}">
+                      <span style="flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--surf);color:var(--hint-ink)">{{ I.file }}</span>
+                      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                        <strong style="font-size:16px;color:var(--ink)">{{ fileErrTitle }}</strong>
+                        <span style="font-size:14px;line-height:1.6;color:var(--hint-ink)">{{ fileErrBody }}</span>
+                        <bdi dir="auto" style="font-size:13px;color:var(--ink2)">{{ fileName }} · <bdi dir="ltr">{{ fileSize }}</bdi></bdi>
+                      </div>
+                      <button type="button" onClick="{{ pickFile }}" style="flex:none;height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--hint-line);background:var(--surf);cursor:pointer;font-weight:600;font-size:14px">קובץ אחר</button>
+                    </div>
+                  </sc-if>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:13px;color:var(--ink2)">
+                    <span>הדגמה:</span>
+                    <button type="button" onClick="{{ demoOk }}" style="border:0;background:none;padding:4px 0;color:var(--p);text-decoration:underline;cursor:pointer">קובץ תקין</button>
+                    <button type="button" onClick="{{ demoAudio }}" style="border:0;background:none;padding:4px 0;color:var(--p);text-decoration:underline;cursor:pointer">קובץ שמע</button>
+                    <button type="button" onClick="{{ demoBig }}" style="border:0;background:none;padding:4px 0;color:var(--p);text-decoration:underline;cursor:pointer">קובץ גדול מדי</button>
+                  </div>
+                </section>
+
+                <section style="display:flex;flex-direction:column;gap:10px">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <label for="{{ promptId }}" style="font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px"><span style="display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--p-soft);color:var(--p-ink);font-size:13px">2</span>איך ללמד? <span style="font-weight:400;color:var(--ink2);font-size:14px">(לא חובה)</span></label>
+                    <span style="flex:1"></span>
+                    <button type="button" onClick="{{ tryExample }}" style="display:flex;align-items:center;gap:6px;min-height:44px;border:0;background:none;color:var(--p);font-weight:600;cursor:pointer;padding:0 4px">נסו דוגמה</button>
+                  </div>
+                  <textarea id="{{ promptId }}" value="{{ prompt }}" onChange="{{ onPrompt }}" rows="3" placeholder="למשל: ללמד כיתה ז׳, בצרפתית, בשיטה סוקרטית, עד 15 דקות" style="width:100%;resize:vertical;min-height:96px;padding:14px 16px;border-radius:var(--r);border:1.5px solid var(--line-strong);background:var(--surf);font-size:16px;line-height:1.7;color:var(--ink)" style-focus="border-color:var(--p);outline:none;box-shadow:0 0 0 4px var(--p-soft)"></textarea>
+                </section>
+
+                <div style="display:flex;flex-direction:column;gap:10px;align-items:stretch">
+                  <button type="button" onClick="{{ cont }}" aria-disabled="{{ contDisabled }}" aria-describedby="cont-why" style="{{ contBtn }}" style-hover="{{ btnHover }}" style-active="{{ btnActive }}">
+                    <sc-if value="{{ continuing }}"><span aria-hidden="true" style="width:18px;height:18px;border-radius:50%;border:2.5px solid currentColor;border-top-color:transparent;animation:pm-spin .55s linear infinite"></span></sc-if>
+                    <span>{{ contLabel }}</span>
+                    <sc-if value="{{ contShowArrow }}">{{ I.arrowL }}</sc-if>
+                  </button>
+                  <sc-if value="{{ contReason }}">
+                    <p id="cont-why" style="margin:0;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;color:var(--ink2)">
+                      {{ I.info }}<span>{{ contReason.msg }}</span>
+                      <sc-if value="{{ contReason.act }}"><button type="button" onClick="{{ openSettings }}" style="border:0;background:none;color:var(--p);font-weight:600;text-decoration:underline;cursor:pointer;min-height:44px;padding:0 2px">{{ contReason.act }}</button></sc-if>
+                    </p>
+                  </sc-if>
+                </div>
+              </div>
+            </main>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isReport }}">
+          <div style="position:absolute;inset:0;overflow-y:auto;background:var(--bg)">
+            <header style="display:flex;align-items:center;gap:10px;padding:12px 20px;position:sticky;top:0;background:var(--bg);z-index:5">
+              <dc-import name="Tutor" mood="still" size="34" rm="{{ rm }}" hint-size="34px,34px"></dc-import>
+              <span style="font:var(--fdw) 17px/1.2 var(--fd)">מלמדים אותי את הקובץ</span>
+            </header>
+            <main style="display:flex;justify-content:center;padding:{{ L.pad }}">
+              <div style="width:100%;max-width:860px;display:flex;flex-direction:column;gap:22px">
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <h1 style="margin:0;font:var(--fdw) {{ L.h2 }}/1.25 var(--fd)">קראנו את הקובץ</h1>
+                  <p style="margin:0;font-size:16px;color:var(--ink2);line-height:1.6"><bdi dir="auto" style="font-weight:600;color:var(--ink)">{{ fileName }}</bdi> · 5 עמודים · 3 נקראו במלואם, ואחד בעזרת ראייה.</p>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax({{ L.pageMin }},1fr));gap:12px">
+                  <sc-for list="{{ pages }}" as="pg" hint-placeholder-count="5">
+                    <div style="display:flex;flex-direction:column;gap:10px;padding:10px;border-radius:var(--r);background:var(--surf);box-shadow:var(--sh);animation:{{ pg.anim }}">
+                      <div aria-hidden="true" style="{{ pg.thumb }}"><span style="font:500 11px ui-monospace,Menlo,monospace;color:var(--ink2);background:var(--surf);padding:2px 6px;border-radius:4px">{{ pg.ph }}</span></div>
+                      <strong style="font-size:15px">עמוד {{ pg.n }}</strong>
+                      <span style="{{ pg.chip }}">{{ pg.icon }}<span>{{ pg.label }}</span></span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <div style="display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:var(--r);background:var(--hint-soft);border:1px solid var(--hint-line)">
+                    <span style="flex:none;color:var(--hint-ink);margin-top:2px">{{ I.bulb }}</span>
+                    <p style="margin:0;font-size:15px;line-height:1.65;color:var(--ink)"><strong>עמוד 5 מטושטש מדי לקריאה.</strong> השיעור ייבנה בלעדיו. אם הוא חשוב, אפשר לחזור ולהעלות צילום חד יותר.</p>
+                  </div>
+                  <div style="display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:var(--r);background:var(--surf);box-shadow:var(--ring)">
+                    <span style="flex:none;color:var(--ink2);margin-top:2px">{{ I.skip }}</span>
+                    <p style="margin:0;font-size:15px;line-height:1.65;color:var(--ink)">עמוד 4 ריק, אז דילגנו עליו.</p>
+                  </div>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px">
+                  <div style="display:flex;flex-direction:column;gap:10px;padding:18px;border-radius:var(--rl);background:var(--surf);box-shadow:var(--ring)">
+                    <strong style="font-size:15px;color:var(--ink2);font-weight:600">תצוגה מקדימה של הטקסט</strong>
+                    <div dir="rtl" lang="he" style="max-height:180px;overflow:auto;font-size:16px;line-height:1.8;color:var(--ink);display:flex;flex-direction:column;gap:8px;padding-inline-end:6px">
+                      <strong style="font:var(--fdw) 18px/1.4 var(--fd)">פרק 3: משפט פיתגורס</strong>
+                      <p style="margin:0">משולש ישר זווית הוא משולש שבו אחת הזוויות היא בת 90 מעלות. הצלעות היוצרות את הזווית הישרה נקראות ניצבים, והצלע שמולה נקראת יתר.</p>
+                      <p style="margin:0">משפט פיתגורס: בכל משולש ישר זווית, סכום ריבועי הניצבים שווה לריבוע היתר: <bdi dir="ltr" style="font-family:'STIX Two Text',serif"><i>a</i>² + <i>b</i>² = <i>c</i>²</bdi>.</p>
+                    </div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:10px;padding:18px;border-radius:var(--rl);background:var(--surf);box-shadow:var(--ring)">
+                    <strong style="font-size:15px;color:var(--ink2);font-weight:600">ההנחיה למורה ה-AI</strong>
+                    <p style="margin:0;font-size:16px;line-height:1.75">{{ promptShown }}</p>
+                  </div>
+                </div>
+                <div style="display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap">
+                  <button type="button" onClick="{{ backToSetup }}" style="display:flex;align-items:center;gap:8px;height:48px;padding:0 18px;border-radius:var(--r);border:1.5px solid var(--line-strong);background:var(--surf);font-weight:600;font-size:16px;cursor:pointer;transition:transform .16s cubic-bezier(.23,1,.32,1), filter .16s ease" style-hover="background:var(--surf2)" style-active="transform:scale(.97)">{{ I.arrowR }}חזרה</button>
+                  <button type="button" onClick="{{ build }}" style="display:flex;align-items:center;gap:10px;height:52px;padding:0 26px;border-radius:var(--r);border:0;background:var(--p);color:var(--on-p);font-weight:600;font-size:17px;cursor:pointer;box-shadow:var(--sh-btn);transition:transform .16s cubic-bezier(.23,1,.32,1), filter .16s ease" style-hover="filter:brightness(1.07)" style-active="transform:scale(.97);box-shadow:none">התחלת שיעור{{ I.arrowL }}</button>
+                </div>
+              </div>
+            </main>
+            <sc-if value="{{ building }}">
+              <div role="status" aria-live="polite" style="position:absolute;inset:0;z-index:20;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:24px;animation:pm-fade .25s both">
+                <dc-import name="Tutor" mood="think" size="104" rm="{{ rm }}" hint-size="104px,104px"></dc-import>
+                <h2 style="margin:0;font:var(--fdw) 26px/1.3 var(--fd)">בונים לכם שיעור...</h2>
+                <ol style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:15px">
+                  <sc-for list="{{ buildSteps }}" as="b"><li style="display:flex;align-items:center;gap:8px;color:{{ b.color }}"><span style="{{ b.dot }}">{{ b.icon }}</span>{{ b.label }}</li></sc-for>
+                </ol>
+                <div aria-hidden="true" style="width:100%;max-width:520px;display:flex;flex-direction:column;gap:10px">
+                  <sc-for list="{{ skeletons }}" as="k"><div style="display:flex;gap:12px;align-items:center;padding:14px;border-radius:var(--r);background:var(--surf);box-shadow:var(--ring)"><span style="{{ k.c }}"></span><span style="flex:1;display:flex;flex-direction:column;gap:8px"><span style="{{ k.l1 }}"></span><span style="{{ k.l2 }}"></span></span></div></sc-for>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isLesson }}">
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:var(--chat)">
+            <header style="flex:none;display:flex;flex-wrap:wrap;align-items:center;gap:10px 24px;padding:{{ L.headPad }};background:var(--surf);border-bottom:1px solid var(--line);z-index:4">
+              <div style="display:flex;align-items:center;gap:10px;flex:1 1 300px;min-width:0">
+                <button type="button" onClick="{{ backToSetup }}" aria-label="יציאה מהשיעור" title="יציאה מהשיעור" style="flex:none;width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surf);display:grid;place-items:center;cursor:pointer" style-hover="background:var(--surf2)">{{ I.arrowR }}</button>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px">
+                  <span style="font-size:13px;font-weight:600;color:var(--p-ink)">{{ stepLabel }}</span>
+                  <span dir="{{ ldir }}" lang="{{ lcode }}" style="font:var(--fdw) 18px/1.35 var(--fd);color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:start">{{ stepTitle }}</span>
+                </div>
+                <button type="button" onClick="{{ toggleOutline }}" aria-expanded="{{ outline }}" style="flex:none;display:flex;align-items:center;gap:6px;height:44px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--surf);cursor:pointer;font-weight:500;font-size:15px" style-hover="background:var(--surf2)">{{ I.list }}<span>{{ L.outlineLabel }}</span></button>
+              </div>
+              <div data-path="1" role="progressbar" aria-label="{{ stepLabel }}" aria-valuemin="0" aria-valuemax="7" aria-valuenow="{{ doneCount }}" style="position:relative;flex:1 1 300px;max-width:440px;padding:5px 4px;border-radius:999px;background:{{ pathBg }};transition:background .4s;animation:{{ glowAnim }}">
+                <div style="position:absolute;top:50%;inset-inline:19px;height:6px;margin-top:-3px;border-radius:3px;background:var(--line)"></div>
+                <div style="position:absolute;top:50%;inset-inline-start:19px;height:6px;margin-top:-3px;border-radius:3px;background:var(--ok);transition:width .6s cubic-bezier(.77,0,.175,1);width:{{ fillW }}"></div>
+                <div style="position:relative;display:flex;justify-content:space-between">
+                  <sc-for list="{{ nodes }}" as="n" hint-placeholder-count="7">
+                    <div title="{{ n.label }}" aria-label="{{ n.label }}" style="{{ n.style }}">
+                      <sc-if value="{{ n.isCur }}"><span aria-hidden="true" style="position:absolute;inset:-5px;border-radius:50%;border:2px solid var(--p);animation:{{ n.pulse }}"></span></sc-if>
+                      <sc-if value="{{ n.isDone }}"><svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true" style="animation:{{ n.star }}"><polygon points="12 2.5 14.9 8.6 21.5 9.3 16.5 13.8 17.9 20.4 12 17 6.1 20.4 7.5 13.8 2.5 9.3 9.1 8.6" fill="currentColor"></polygon></svg></sc-if>
+                      <sc-if value="{{ n.showNum }}"><span>{{ n.num }}</span></sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </header>
+
+            <div style="position:relative;flex:1;min-height:0;display:flex">
+              <div ref="{{ chatRef }}" role="log" aria-live="polite" aria-label="שיחת השיעור" style="flex:1;overflow-y:auto;padding:{{ L.chatPad }}">
+                <div style="max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:16px">
+                  <div style="align-self:center;display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;background:var(--surf);box-shadow:var(--ring);font-size:13px;color:var(--ink2);max-width:100%">
+                    {{ I.file14 }}<span>שיעור מתוך</span><bdi dir="auto" style="font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ fileName }}</bdi><span>· {{ langLabel }}</span>
+                  </div>
+                  <sc-for list="{{ msgs }}" as="m" hint-placeholder-count="3">
+                    <sc-if value="{{ m.isTutor }}">
+                      <div style="display:flex;gap:10px;align-items:flex-end;animation:{{ m.anim }}">
+                        <div style="flex:none;width:{{ L.avPx }};display:flex;justify-content:center;margin-bottom:24px">
+                          <dc-import name="Tutor" mood="{{ m.mood }}" size="{{ L.av }}" rm="{{ rm }}" hint-size="40px,40px"></dc-import>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:4px;min-width:0;max-width:min(640px,86%);align-items:flex-start">
+                          <div style="{{ m.bubble }}">
+                            <sc-if value="{{ m.isCorrect }}">
+                              <div style="display:flex;margin-bottom:10px">
+                                <div data-badge="{{ m.key }}" role="status" style="position:relative;display:inline-flex;align-items:center;gap:7px;padding:7px 16px 7px 14px;border-radius:999px;background:var(--acc);color:var(--acc-on);font:var(--fdw-b) 18px/1.2 var(--fd);box-shadow:0 4px 14px -4px var(--acc);animation:{{ m.badgeAnim }}">
+                                  <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2.5 14.9 8.6 21.5 9.3 16.5 13.8 17.9 20.4 12 17 6.1 20.4 7.5 13.8 2.5 9.3 9.1 8.6" fill="currentColor"></polygon></svg>
+                                  <span dir="{{ m.dir }}">{{ m.praise }}</span>
+                                  {{ m.sparkles }}
+                                </div>
+                              </div>
+                            </sc-if>
+                            <sc-if value="{{ m.isHint }}">
+                              <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+                                <span aria-hidden="true" style="flex:none;width:36px;height:36px;border-radius:50%;background:var(--hint);color:#4a3600;display:grid;place-items:center;animation:{{ m.bulbAnim }}">{{ I.bulb }}</span>
+                                <strong dir="{{ m.dir }}" style="font-size:16px;font-weight:600;color:var(--hint-ink)">{{ m.title }}</strong>
+                                <span style="margin-inline-start:auto;display:flex;align-items:center;gap:5px;font-size:13px;color:var(--hint-ink)">
+                                  <sc-for list="{{ m.lamps }}" as="l"><span aria-hidden="true" style="{{ l }}"></span></sc-for>
+                                  <span>{{ m.lampLabel }}</span>
+                                </span>
+                              </div>
+                            </sc-if>
+                            <sc-if value="{{ m.isStuck }}">
+                              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                                <span aria-hidden="true" style="flex:none;width:36px;height:36px;border-radius:50%;background:var(--surf);color:var(--info-ink);display:grid;place-items:center">{{ I.hands }}</span>
+                                <strong dir="{{ m.dir }}" style="font-size:16px;font-weight:600;color:var(--info-ink)">{{ m.title }}</strong>
+                              </div>
+                            </sc-if>
+                            <sc-if value="{{ m.isOff }}">
+                              <div style="display:flex;margin-bottom:8px"><span dir="{{ m.dir }}" style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;background:var(--surf2);color:var(--ink2);font-size:13px;font-weight:600">{{ I.compass }}{{ m.tag }}</span></div>
+                            </sc-if>
+                            <div dir="{{ m.dir }}" lang="{{ m.lang }}" style="display:flex;flex-direction:column;gap:10px;font-size:17px;line-height:1.75;text-align:start;overflow-wrap:anywhere">{{ m.body }}</div>
+                            <sc-if value="{{ m.isStreaming }}"><span aria-hidden="true" style="display:inline-block;width:8px;height:18px;margin-top:4px;border-radius:2px;background:var(--p);animation:pm-caret .8s steps(1) infinite"></span></sc-if>
+                            <sc-if value="{{ m.isStopped }}">
+                              <div style="display:flex;align-items:center;gap:10px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);flex-wrap:wrap">
+                                <span style="font-size:14px;color:var(--ink2)">התשובה נעצרה באמצע.</span>
+                                <button type="button" onClick="{{ m.onResume }}" style="display:flex;align-items:center;gap:6px;height:40px;padding:0 14px;border-radius:999px;border:1.5px solid var(--p);background:var(--surf);color:var(--p-ink);font-weight:600;cursor:pointer" style-hover="background:var(--p-soft)">המשך{{ I.arrowL }}</button>
+                              </div>
+                            </sc-if>
+                          </div>
+                          <sc-if value="{{ m.hasSrc }}">
+                            <button type="button" onClick="{{ m.onSource }}" aria-label="{{ m.srcAria }}" style="display:flex;align-items:center;gap:6px;min-height:32px;padding:4px 10px;border:0;border-radius:999px;background:transparent;color:var(--ink2);font-size:13px;font-weight:500;cursor:pointer" style-hover="background:var(--surf);color:var(--p-ink)">{{ I.book }}מקור · עמוד {{ m.page }}</button>
+                          </sc-if>
+                        </div>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ m.isStudent }}">
+                      <div style="display:flex;justify-content:flex-end;animation:{{ m.anim }}">
+                        <div dir="auto" style="max-width:min(520px,78%);padding:12px 18px;border-radius:var(--rl);border-end-end-radius:6px;background:var(--p);color:var(--on-p);font-size:17px;line-height:1.6;box-shadow:var(--sh)">{{ m.text }}</div>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ m.isRibbon }}">
+                      <div style="display:flex;justify-content:center;padding:4px 0">
+                        <div role="status" style="display:flex;align-items:center;gap:10px;padding:10px 36px;background:var(--acc);color:var(--acc-on);font:var(--fdw-b) 18px/1.3 var(--fd);clip-path:polygon(0 0,100% 0,calc(100% - 14px) 50%,100% 100%,0 100%,14px 50%);animation:{{ m.ribbonAnim }}">
+                          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2.5 14.9 8.6 21.5 9.3 16.5 13.8 17.9 20.4 12 17 6.1 20.4 7.5 13.8 2.5 9.3 9.1 8.6" fill="currentColor"></polygon></svg>
+                          <span>השלב הושלם!</span>
+                          <span style="font-family:Rubik,sans-serif;font-weight:500;font-size:15px" dir="{{ m.dir }}">{{ m.title }}</span>
+                        </div>
+                      </div>
+                    </sc-if>
+                  </sc-for>
+                  <sc-if value="{{ thinking }}">
+                    <div role="status" style="display:flex;gap:10px;align-items:flex-end;animation:{{ anim.pop }}">
+                      <div style="flex:none;width:{{ L.avPx }};display:flex;justify-content:center">
+                        <dc-import name="Tutor" mood="think" size="{{ L.av }}" rm="{{ rm }}" hint-size="40px,40px"></dc-import>
+                      </div>
+                      <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-radius:var(--rl);border-end-start-radius:6px;background:var(--tb);box-shadow:var(--sh)">
+                        <span aria-hidden="true" style="display:flex;gap:5px"><span style="width:8px;height:8px;border-radius:50%;background:var(--p);animation:{{ anim.dot1 }}"></span><span style="width:8px;height:8px;border-radius:50%;background:var(--p);animation:{{ anim.dot2 }}"></span><span style="width:8px;height:8px;border-radius:50%;background:var(--p);animation:{{ anim.dot3 }}"></span></span>
+                        <span style="font-size:14px;color:var(--ink2)">חושבים על זה...</span>
+                      </div>
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+
+              <sc-if value="{{ srcDesk }}">
+                <aside aria-label="מקור" style="position:absolute;top:0;bottom:0;inset-inline-start:0;width:400px;background:var(--surf);border-inline-end:1px solid var(--line);box-shadow:-12px 0 40px -12px rgba(0,0,0,.18);display:flex;flex-direction:column;z-index:8;animation:{{ anim.panelStart }}">
+                  <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line)">
+                    <span style="color:var(--p)">{{ I.book }}</span>
+                    <strong style="font:var(--fdw) 18px/1.3 var(--fd)">מקור</strong>
+                    <span style="padding:3px 10px;border-radius:999px;background:var(--p-soft);color:var(--p-ink);font-size:13px;font-weight:600">עמוד {{ src.page }}</span>
+                    <span style="flex:1"></span>
+                    <button type="button" onClick="{{ closeSource }}" aria-label="סגירת המקור" style="width:44px;height:44px;border-radius:12px;border:0;background:var(--surf2);display:grid;place-items:center;cursor:pointer">{{ I.x }}</button>
+                  </div>
+                  <div style="flex:1;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:14px">
+                    <span style="font-size:13px;color:var(--ink2)"><bdi dir="auto">{{ fileName }}</bdi> · {{ src.how }}</span>
+                    <blockquote dir="rtl" lang="he" style="margin:0;padding:16px 18px;border-radius:var(--r);background:var(--hint-soft);border:1px solid var(--hint-line);font-size:17px;line-height:1.8;color:var(--ink)">{{ src.body }}</blockquote>
+                    <p style="margin:0;font-size:14px;line-height:1.6;color:var(--ink2)">זה הקטע מהקובץ שעליו מבוסס ההסבר. הוא מוצג בשפה ובכיוון המקוריים שלו.</p>
+                  </div>
+                </aside>
+              </sc-if>
+
+              <sc-if value="{{ outlineDesk }}">
+                <aside aria-label="מפת השיעור" style="position:absolute;top:0;bottom:0;inset-inline-end:0;width:340px;background:var(--surf);border-inline-start:1px solid var(--line);box-shadow:12px 0 40px -12px rgba(0,0,0,.18);display:flex;flex-direction:column;z-index:8;animation:{{ anim.panelEnd }}">
+                  <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line)">
+                    <strong style="font:var(--fdw) 18px/1.3 var(--fd)">מפת השיעור</strong>
+                    <span style="flex:1"></span>
+                    <button type="button" onClick="{{ toggleOutline }}" aria-label="סגירת מפת השיעור" style="width:44px;height:44px;border-radius:12px;border:0;background:var(--surf2);display:grid;place-items:center;cursor:pointer">{{ I.x }}</button>
+                  </div>
+                  <ol style="list-style:none;margin:0;padding:14px;display:flex;flex-direction:column;gap:6px;overflow:auto">
+                    <sc-for list="{{ outlineItems }}" as="o"><li style="{{ o.row }}"><span style="{{ o.dot }}">{{ o.icon }}</span><span style="flex:1;min-width:0;display:flex;flex-direction:column"><span dir="{{ ldir }}" style="font-size:15px;font-weight:600;text-align:start">{{ o.title }}</span><span style="font-size:13px;color:var(--ink2)">{{ o.state }}</span></span></li></sc-for>
+                  </ol>
+                </aside>
+              </sc-if>
+            </div>
+
+            <sc-if value="{{ err }}">
+              <div role="alert" style="flex:none;padding:0 16px;animation:{{ anim.pop }}">
+                <div style="max-width:820px;margin:0 auto 10px;display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-radius:var(--r);background:var(--err-soft);border:1px solid var(--err-line);color:var(--ink);flex-wrap:wrap">
+                  <span style="flex:none;color:var(--err-ink);margin-top:2px">{{ err.icon }}</span>
+                  <div style="flex:1 1 220px;display:flex;flex-direction:column;gap:2px"><strong style="font-size:16px">{{ err.title }}</strong><span style="font-size:14px;line-height:1.6;color:var(--ink2)">{{ err.body }}</span></div>
+                  <div style="display:flex;gap:8px">
+                    <sc-if value="{{ err.act2 }}"><button type="button" onClick="{{ openSettings }}" style="height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--err-line);background:var(--surf);font-weight:600;cursor:pointer">{{ err.act2 }}</button></sc-if>
+                    <button type="button" onClick="{{ retry }}" style="display:flex;align-items:center;gap:6px;height:44px;padding:0 16px;border-radius:12px;border:0;background:var(--ink);color:var(--surf);font-weight:600;cursor:pointer" style-active="transform:scale(.97)"><sc-if value="{{ retrying }}"><span aria-hidden="true" style="width:16px;height:16px;border-radius:50%;border:2px solid currentColor;border-top-color:transparent;animation:pm-spin .55s linear infinite"></span></sc-if><sc-if value="{{ notRetrying }}">{{ I.refresh }}</sc-if>ניסיון חוזר</button>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <div style="flex:none;padding:{{ L.inputPad }};background:var(--surf);border-top:1px solid var(--line)">
+              <div style="max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;gap:6px;align-items:center;overflow-x:auto;padding-bottom:2px">
+                  <span style="flex:none;font:500 11px ui-monospace,Menlo,monospace;color:var(--ink2);padding:2px 6px;border:1px dashed var(--line-strong);border-radius:4px">הדגמה</span>
+                  <sc-for list="{{ quick }}" as="q"><button type="button" onClick="{{ q.onClick }}" style="flex:none;height:34px;padding:0 12px;border-radius:999px;border:1px dashed var(--line-strong);background:var(--surf2);font-size:13px;cursor:pointer;color:var(--ink)" style-hover="border-color:var(--p);color:var(--p-ink)">{{ q.label }}</button></sc-for>
+                </div>
+                <div style="display:flex;gap:8px;align-items:flex-end">
+                  <textarea aria-label="התשובה שלכם" dir="auto" rows="1" value="{{ input }}" onChange="{{ onInput }}" onKeyDown="{{ onInputKey }}" placeholder="כתבו כאן את התשובה..." style="flex:1;min-width:0;resize:none;height:52px;max-height:140px;padding:13px 16px;border-radius:var(--r);border:1.5px solid var(--line-strong);background:var(--surf);font-size:17px;line-height:1.5;color:var(--ink);text-align:start" style-focus="border-color:var(--p);outline:none;box-shadow:0 0 0 4px var(--p-soft)"></textarea>
+                  <button type="button" onClick="{{ askHint }}" aria-label="בקשת רמז" title="בקשת רמז" style="flex:none;display:flex;align-items:center;gap:6px;height:52px;padding:0 14px;border-radius:var(--r);border:1.5px solid var(--hint-line);background:var(--hint-soft);color:var(--hint-ink);font-weight:600;cursor:pointer;transition:transform .16s cubic-bezier(.23,1,.32,1), filter .16s ease" style-hover="filter:brightness(.98)" style-active="transform:scale(.97)">{{ I.bulb }}<sc-if value="{{ L.hintText }}"><span>רמז</span></sc-if></button>
+                  <sc-if value="{{ busy }}">
+                    <button type="button" onClick="{{ stop }}" style="flex:none;display:flex;align-items:center;gap:8px;height:52px;padding:0 18px;border-radius:var(--r);border:1.5px solid var(--ink);background:var(--surf);color:var(--ink);font-weight:600;font-size:16px;cursor:pointer" style-active="transform:scale(.97)">{{ I.stop }}<span>עצירה</span></button>
+                  </sc-if>
+                  <sc-if value="{{ notBusy }}">
+                    <button type="button" onClick="{{ sendNow }}" style="{{ sendBtn }}" style-hover="filter:brightness(.98)" style-active="transform:scale(.97);box-shadow:none">{{ I.send }}<span>שליחה</span></button>
+                  </sc-if>
+                </div>
+              </div>
+            </div>
+
+            <sc-if value="{{ srcMob }}">
+              <div style="position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;justify-content:flex-end">
+                <div onClick="{{ closeSource }}" style="position:absolute;inset:0;background:rgba(20,28,30,.4);animation:pm-fade .2s both"></div>
+                <section aria-label="מקור" style="position:relative;max-height:72%;display:flex;flex-direction:column;background:var(--surf);border-radius:24px 24px 0 0;box-shadow:0 -10px 40px rgba(0,0,0,.2);animation:{{ anim.sheet }}">
+                  <span aria-hidden="true" style="align-self:center;width:40px;height:5px;border-radius:3px;background:var(--line-strong);margin-top:10px"></span>
+                  <div style="display:flex;align-items:center;gap:10px;padding:10px 18px 12px;border-bottom:1px solid var(--line)">
+                    <strong style="font:var(--fdw) 18px/1.3 var(--fd)">מקור</strong>
+                    <span style="padding:3px 10px;border-radius:999px;background:var(--p-soft);color:var(--p-ink);font-size:13px;font-weight:600">עמוד {{ src.page }}</span>
+                    <span style="flex:1"></span>
+                    <button type="button" onClick="{{ closeSource }}" aria-label="סגירת המקור" style="width:44px;height:44px;border-radius:12px;border:0;background:var(--surf2);display:grid;place-items:center;cursor:pointer">{{ I.x }}</button>
+                  </div>
+                  <div style="overflow:auto;padding:16px 18px 24px;display:flex;flex-direction:column;gap:12px">
+                    <span style="font-size:13px;color:var(--ink2)"><bdi dir="auto">{{ fileName }}</bdi> · {{ src.how }}</span>
+                    <blockquote dir="rtl" lang="he" style="margin:0;padding:14px 16px;border-radius:var(--r);background:var(--hint-soft);border:1px solid var(--hint-line);font-size:17px;line-height:1.8">{{ src.body }}</blockquote>
+                  </div>
+                </section>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ outlineMob }}">
+              <div style="position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;justify-content:flex-end">
+                <div onClick="{{ toggleOutline }}" style="position:absolute;inset:0;background:rgba(20,28,30,.4);animation:pm-fade .2s both"></div>
+                <section aria-label="מפת השיעור" style="position:relative;max-height:80%;display:flex;flex-direction:column;background:var(--surf);border-radius:24px 24px 0 0;animation:{{ anim.sheet }}">
+                  <span aria-hidden="true" style="align-self:center;width:40px;height:5px;border-radius:3px;background:var(--line-strong);margin-top:10px"></span>
+                  <div style="display:flex;align-items:center;padding:8px 18px 10px;border-bottom:1px solid var(--line)"><strong style="font:var(--fdw) 18px/1.3 var(--fd);flex:1">מפת השיעור</strong><button type="button" onClick="{{ toggleOutline }}" aria-label="סגירת מפת השיעור" style="width:44px;height:44px;border-radius:12px;border:0;background:var(--surf2);display:grid;place-items:center;cursor:pointer">{{ I.x }}</button></div>
+                  <ol style="list-style:none;margin:0;padding:12px;display:flex;flex-direction:column;gap:6px;overflow:auto">
+                    <sc-for list="{{ outlineItems }}" as="o"><li style="{{ o.row }}"><span style="{{ o.dot }}">{{ o.icon }}</span><span style="flex:1;min-width:0;display:flex;flex-direction:column"><span dir="{{ ldir }}" style="font-size:15px;font-weight:600;text-align:start">{{ o.title }}</span><span style="font-size:13px;color:var(--ink2)">{{ o.state }}</span></span></li></sc-for>
+                  </ol>
+                </section>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isComplete }}">
+          <div style="position:absolute;inset:0;overflow-y:auto;background:var(--bg);display:flex;flex-direction:column;align-items:center;padding:{{ L.pad }};gap:18px">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;margin-top:8px">
+              <dc-import name="Tutor" mood="dance" size="{{ L.doneTutor }}" rm="{{ rm }}" hint-size="120px,120px"></dc-import>
+              <h1 style="margin:0;font:var(--fdw-b) {{ L.h2 }}/1.25 var(--fd);text-wrap:balance">סיימתם את השיעור! הנה מה שלמדנו</h1>
+            </div>
+            <div style="width:100%;max-width:620px;display:flex;flex-direction:column;gap:16px;padding:22px;border-radius:var(--rl);background:var(--surf);box-shadow:var(--sh);animation:{{ anim.recap }}">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <span dir="{{ ldir }}" style="font:var(--fdw) 19px/1.3 var(--fd)">{{ lessonTitle }}</span>
+                <span style="margin-inline-start:auto;display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;background:var(--ok-soft);color:var(--ok-ink);font-size:14px;font-weight:600">{{ I.check16 }}7 מתוך 7 שלבים</span>
+              </div>
+              <ul dir="{{ ldir }}" lang="{{ lcode }}" style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px">
+                <sc-for list="{{ recap }}" as="r" hint-placeholder-count="3"><li style="display:flex;gap:12px;align-items:flex-start;font-size:17px;line-height:1.7;animation:{{ r.anim }}"><span style="flex:none;width:28px;height:28px;margin-top:1px;border-radius:50%;background:var(--acc-soft);color:var(--acc-ink);display:grid;place-items:center;font-weight:700;font-size:14px">{{ r.n }}</span><span>{{ r.node }}</span></li></sc-for>
+              </ul>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;padding-top:14px;border-top:1px solid var(--line)">
+                <sc-for list="{{ stats }}" as="st"><span style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--surf2);font-size:14px"><strong style="font-weight:700">{{ st.v }}</strong>{{ st.l }}</span></sc-for>
+              </div>
+              <sc-if value="{{ saved }}">
+                <div style="display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:var(--r);background:var(--p-soft);color:var(--p-ink);font-size:15px;line-height:1.6">{{ I.compass }}<span>השאלה ששמרנו לסוף: <bdi dir="auto" style="font-weight:600">״{{ saved }}״</bdi> אפשר לשאול אותה עכשיו את המורה בכיתה.</span></div>
+              </sc-if>
+              <p style="margin:0;font-size:15px;color:var(--ink2);line-height:1.6">כל רמז וכל ניסיון נוסף הם חלק מהלמידה. זה בדיוק איך המוח מתחזק.</p>
+            </div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+              <button type="button" onClick="{{ reviewChat }}" style="display:flex;align-items:center;gap:8px;height:48px;padding:0 18px;border-radius:var(--r);border:1.5px solid var(--line-strong);background:var(--surf);font-weight:600;font-size:16px;cursor:pointer" style-hover="background:var(--surf2)">לצפייה בשיחה</button>
+              <button type="button" onClick="{{ newLesson }}" style="display:flex;align-items:center;gap:8px;height:52px;padding:0 26px;border-radius:var(--r);border:0;background:var(--p);color:var(--on-p);font-weight:600;font-size:17px;cursor:pointer;box-shadow:var(--sh-btn);transition:transform .16s cubic-bezier(.23,1,.32,1), filter .16s ease" style-hover="filter:brightness(1.07)" style-active="transform:scale(.97);box-shadow:none">{{ I.plus }}שיעור חדש</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ settingsOpen }}">
+          <div style="position:absolute;inset:0;z-index:40">
+            <div onClick="{{ closeSettings }}" style="position:absolute;inset:0;background:rgba(20,28,30,.4);animation:pm-fade .2s both"></div>
+            <aside role="dialog" aria-modal="true" aria-label="הגדרות" style="position:absolute;top:0;bottom:0;inset-inline-end:0;width:min(420px,100%);background:var(--surf);display:flex;flex-direction:column;box-shadow:16px 0 50px rgba(0,0,0,.2);animation:{{ anim.panelEnd }}">
+              <div style="display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line)">
+                <strong style="font:var(--fdw) 20px/1.3 var(--fd);flex:1">הגדרות</strong>
+                <button type="button" onClick="{{ closeSettings }}" aria-label="סגירת ההגדרות" style="width:44px;height:44px;border-radius:12px;border:0;background:var(--surf2);display:grid;place-items:center;cursor:pointer">{{ I.x }}</button>
+              </div>
+              <div style="flex:1;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:22px">
+                <fieldset style="border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:8px">
+                  <legend style="font-weight:600;font-size:15px;margin-bottom:8px;padding:0">ספק ה-AI</legend>
+                  <div role="radiogroup" style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                    <sc-for list="{{ providers }}" as="pv"><button type="button" role="radio" aria-checked="{{ pv.on }}" onClick="{{ pv.onClick }}" style="{{ pv.style }}">{{ pv.label }}</button></sc-for>
+                  </div>
+                </fieldset>
+                <sc-if value="{{ isCustom }}">
+                  <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:600;font-size:15px">כתובת השרת</span><input dir="ltr" value="{{ baseUrl }}" onChange="{{ onBaseUrl }}" placeholder="https://api.example.com/v1" style="height:48px;padding:0 14px;border-radius:12px;border:1.5px solid var(--line-strong);background:var(--surf);font-size:15px;text-align:left" style-focus="border-color:var(--p);outline:none;box-shadow:0 0 0 4px var(--p-soft)"></label>
+                </sc-if>
+                <label style="display:flex;flex-direction:column;gap:6px"><span style="font-weight:600;font-size:15px">שם המודל</span><input dir="ltr" value="{{ model }}" onChange="{{ onModel }}" style="height:48px;padding:0 14px;border-radius:12px;border:1.5px solid var(--line-strong);background:var(--surf);font-size:15px;text-align:left;font-family:ui-monospace,Menlo,monospace" style-focus="border-color:var(--p);outline:none;box-shadow:0 0 0 4px var(--p-soft)"></label>
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <label for="{{ keyId }}" style="font-weight:600;font-size:15px">מפתח API</label>
+                  <div style="display:flex;gap:6px">
+                    <input id="{{ keyId }}" dir="ltr" type="{{ keyType }}" value="{{ apiKey }}" onChange="{{ onKey }}" placeholder="הדביקו כאן את המפתח" autocomplete="off" style="flex:1;min-width:0;height:48px;padding:0 14px;border-radius:12px;border:1.5px solid var(--line-strong);background:var(--surf);font-size:15px;text-align:left;font-family:ui-monospace,Menlo,monospace" style-focus="border-color:var(--p);outline:none;box-shadow:0 0 0 4px var(--p-soft)">
+                    <button type="button" onClick="{{ toggleKey }}" aria-label="{{ keyToggleLabel }}" title="{{ keyToggleLabel }}" style="flex:none;width:48px;height:48px;border-radius:12px;border:1.5px solid var(--line-strong);background:var(--surf);display:grid;place-items:center;cursor:pointer">{{ keyIcon }}</button>
+                  </div>
+                  <sc-if value="{{ keyOk }}"><span style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ok-ink)">{{ I.check16 }}המפתח נשמר לשיחה הזו</span></sc-if>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+                  <sc-for list="{{ switches }}" as="sw">
+                    <button type="button" role="switch" aria-checked="{{ sw.on }}" onClick="{{ sw.onClick }}" style="display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 0;border:0;background:none;cursor:pointer;text-align:start;width:100%">
+                      <span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:500">{{ sw.label }}</span><span style="font-size:13px;color:var(--ink2);line-height:1.5">{{ sw.sub }}</span></span>
+                      <span aria-hidden="true" style="{{ sw.track }}"><span style="{{ sw.knob }}"></span></span>
+                    </button>
+                  </sc-for>
+                </div>
+                <label style="display:flex;align-items:center;gap:12px;min-height:44px;cursor:pointer">
+                  <input type="checkbox" checked="{{ remember }}" onChange="{{ toggleRemember }}" style="width:22px;height:22px;accent-color:var(--p);margin:0">
+                  <span style="font-size:15px">זכרו את המפתח במכשיר הזה</span>
+                </label>
+                <p style="margin:0;display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:var(--r);background:var(--p-soft);color:var(--p-ink);font-size:14px;line-height:1.6">{{ I.lock }}<span>המפתח שלכם נשלח רק לספק ה-AI שבחרתם, ולא נשמר אצלנו.</span></p>
+              </div>
+              <div style="padding:14px 20px;border-top:1px solid var(--line)">
+                <button type="button" onClick="{{ closeSettings }}" style="width:100%;height:52px;border-radius:var(--r);border:0;background:var(--p);color:var(--on-p);font-weight:600;font-size:17px;cursor:pointer;box-shadow:var(--sh-btn)" style-active="transform:scale(.97);box-shadow:none">שמירה</button>
+              </div>
+            </aside>
+          </div>
+        </sc-if>
+
+        <canvas ref="{{ confRef }}" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:60"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;calm&quot;,&quot;bright&quot;],&quot;default&quot;:&quot;calm&quot;,&quot;tsType&quot;:&quot;'calm'|'bright'&quot;},&quot;device&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;desktop&quot;,&quot;mobile&quot;],&quot;default&quot;:&quot;desktop&quot;,&quot;tsType&quot;:&quot;'desktop'|'mobile'&quot;},&quot;lessonLang&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;he&quot;,&quot;fr&quot;],&quot;default&quot;:&quot;he&quot;,&quot;tsType&quot;:&quot;'he'|'fr'&quot;},&quot;start&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;setup&quot;,&quot;report&quot;,&quot;lesson&quot;,&quot;complete&quot;],&quot;default&quot;:&quot;setup&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;reducedMotion&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;chrome&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  static TH = {
+    calm: { '--bg': '#f6f4ef', '--surf': '#ffffff', '--surf2': '#f1eee7', '--ink': '#1c2b2d', '--ink2': '#566468', '--line': 'rgba(28,43,45,.1)', '--line-strong': 'rgba(28,43,45,.2)', '--ring': '0 0 0 1px rgba(28,43,45,.07)', '--p': '#0b7a71', '--p-ink': '#075a53', '--p-soft': '#def1ed', '--on-p': '#ffffff', '--acc': '#ff9f43', '--acc-on': '#3b1d00', '--acc-soft': '#ffefdc', '--acc-ink': '#8a4500', '--ok': '#239a63', '--ok-soft': '#e4f4ea', '--ok-ink': '#14603d', '--ok-line': '#b9e2c9', '--hint': '#f5c84c', '--hint-soft': '#fff6db', '--hint-ink': '#6b5000', '--hint-line': '#f1dc9a', '--info-soft': '#e7eff8', '--info-ink': '#22507f', '--info-line': '#c7d8ec', '--err-soft': '#fbeeec', '--err-ink': '#a2392f', '--err-line': '#f1cdc8', '--r': '14px', '--rl': '22px', '--sh': '0 0 0 1px rgba(28,43,45,.06), 0 1px 2px rgba(28,43,45,.05), 0 6px 16px -4px rgba(28,43,45,.08)', '--sh-btn': '0 1px 2px rgba(0,0,0,.1), 0 4px 12px -4px rgba(11,122,113,.5)', '--fd': "'Varela Round', 'Rubik', sans-serif", '--fdw': '400', '--fdw-b': '400', '--chat': '#f6f4ef', '--tb': '#ffffff', '--tc': '#13887e', '--leaf': '#6cbf5a', '--cheek': '#ffb38a' },
+    bright: { '--bg': '#eef3ff', '--surf': '#ffffff', '--surf2': '#e8eefc', '--ink': '#15204a', '--ink2': '#4a5683', '--line': 'rgba(21,32,74,.1)', '--line-strong': 'rgba(21,32,74,.2)', '--ring': '0 0 0 1px rgba(21,32,74,.07)', '--p': '#2456e5', '--p-ink': '#173c9e', '--p-soft': '#e2eaff', '--on-p': '#ffffff', '--acc': '#ffc431', '--acc-on': '#3a2800', '--acc-soft': '#fff3cc', '--acc-ink': '#7a5300', '--ok': '#12a46a', '--ok-soft': '#dcf5e9', '--ok-ink': '#0b6141', '--ok-line': '#a8e3c8', '--hint': '#ffd45c', '--hint-soft': '#fff6d6', '--hint-ink': '#6b4e00', '--hint-line': '#f5dc8e', '--info-soft': '#e6f0ff', '--info-ink': '#1d4b9a', '--info-line': '#c2d5f7', '--err-soft': '#ffeef0', '--err-ink': '#b3304a', '--err-line': '#f6c8d0', '--r': '18px', '--rl': '26px', '--sh': '0 0 0 1px rgba(21,32,74,.06), 0 2px 0 rgba(21,32,74,.05), 0 8px 20px -6px rgba(36,86,229,.14)', '--sh-btn': '0 4px 0 #173c9e', '--fd': "'Rubik', sans-serif", '--fdw': '700', '--fdw-b': '800', '--chat': 'radial-gradient(#d3dcf4 1.3px, transparent 1.5px) 0 0/22px 22px, #f3f6ff', '--tb': '#ffffff', '--tc': '#ff8a3d', '--leaf': '#12a46a', '--cheek': '#ffd0a8' }
+  };
+  static D = {
+    he: {
+      code: 'he', dir: 'rtl', label: 'בעברית', title: 'משפט פיתגורס', qLabel: 'שאלה',
+      praise: ['כל הכבוד!', 'מעולה!', 'בול!', 'יפה מאוד!', 'וואו, בדיוק!', 'איזו חשיבה חדה!'],
+      hintT: ['כמעט! הנה רמז קטן', 'לא בדיוק, בואו ננסה מכיוון אחר'], stuckT: 'בואו נבין את זה ביחד', offTag: 'חוזרים לשיעור',
+      offA: 'שאלה טובה! שמרתי אותה לסוף השיעור.', offB: 'בינתיים, נחזור לשאלה שלנו:', effort: 'ההתמדה השתלמה!',
+      reveal: ['זה בסדר גמור, ככה לומדים. התשובה היא **{ans}**.', 'כל ניסיון מחזק את המוח. בואו נמשיך!'],
+      idk: /לא יודע|לא יודעת|אין לי מושג|לא בטוח|רמז|עזרה/, off: /הפסקה|כדורגל|טיקטוק|אוכל/, idkText: 'אין לי מושג', offQ: 'מה יש היום בהפסקה?', askHint: 'אפשר רמז?',
+      recap: ['במשולש ישר זווית, **היתר** הוא הצלע הארוכה ביותר, והוא נמצא מול הזווית הישרה.', 'משפט פיתגורס: ⟦a² + b² = c²⟧. בעזרתו מוצאים צלע חסרה.', 'אפשר להשתמש בו גם כדי **לבדוק** אם משולש הוא ישר זווית.'],
+      steps: [
+        { t: 'מה זה משולש ישר זווית?', b: ['היי! היום נלמד ביחד את **משפט פיתגורס**, צעד אחר צעד. בכל שלב תהיה שאלה אחת קטנה, ואפשר לבקש רמז מתי שרוצים.', '**משולש ישר זווית** הוא משולש שאחת הזוויות שלו היא **זווית ישרה**, בדיוק כמו פינה של מחברת.'], q: 'כמה מעלות יש בזווית ישרה?', ok: /(^|\D)90(\D|$)|תשעים/, good: '90', bad: '180', ans: '90°', yes: 'נכון, ⟦90°⟧. זה רבע סיבוב שלם.', h: ['חשבו על סיבוב שלם, ⟦360°⟧, שמתחלק לארבע פינות שוות.', 'כמה זה ⟦360 ÷ 4⟧?'], stuck: ['זווית ישרה היא בדיוק **רבע סיבוב**.', 'סיבוב שלם הוא ⟦360°⟧, ורבע ממנו: ⟦360 ÷ 4 = 90⟧.', { q: 'אז כמה מעלות יש בזווית ישרה?' }], src: { p: 1, x: 'משולש ישר זווית הוא משולש שבו אחת הזוויות היא בת 90 מעלות. זווית זו נקראת "זווית ישרה", ובשרטוט מסמנים אותה בריבוע קטן.' } },
+        { t: 'ניצבים ויתר', b: ['לשתי הצלעות שיוצרות את הזווית הישרה קוראים **ניצבים**.', 'הצלע השלישית, זו שמול הזווית הישרה, נקראת **יתר**.'], q: 'איזו צלע היא תמיד הארוכה ביותר במשולש ישר זווית?', ok: /יתר/, good: 'היתר', bad: 'אחד הניצבים', ans: 'היתר', yes: 'בדיוק! **היתר** תמיד ארוך משני הניצבים.', h: ['היא נמצאת מול הזווית הגדולה ביותר במשולש.', 'השם שלה מתחיל באות י׳.'], stuck: ['בכל משולש, מול הזווית הגדולה ביותר נמצאת הצלע הארוכה ביותר.', 'במשולש ישר זווית, הזווית הישרה היא הגדולה, ומולה נמצא **היתר**.', { q: 'אז איזו צלע הכי ארוכה?' }], src: { p: 1, x: 'הצלעות היוצרות את הזווית הישרה נקראות ניצבים. הצלע שמול הזווית הישרה נקראת יתר, והיא הצלע הארוכה ביותר במשולש.' } },
+        { t: 'משפט פיתגורס', b: ['עכשיו מגיע הקסם: בכל משולש ישר זווית, אם מעלים כל ניצב בריבוע ומחברים, מקבלים בדיוק את **היתר בריבוע**.', { f: 'a^2 + b^2 = c^2', cap: '⟦a⟧ ו-⟦b⟧ הם הניצבים, ⟦c⟧ הוא היתר' }, 'באנגלית קוראים לזה ⟪Pythagorean theorem⟫, והוא מוכר כבר יותר מ-2,500 שנה. למשל, במשולש שצלעותיו 3, 4 ו-5: ⟦3² + 4² = 9 + 16 = 25 = 5²⟧.', { t: [['צלע', 'ריבוע'], ['3', '9'], ['4', '16'], ['5', '25']] }], q: 'נסו בעצמכם: אם ⟦a = 6⟧ ו-⟦b = 8⟧, כמה זה ⟦a² + b²⟧?', ok: /100|מאה/, good: '100', bad: '48', ans: '100', yes: 'מושלם: ⟦36 + 64 = 100⟧.', h: ['קודם מעלים בריבוע: ⟦6² = 36⟧. עכשיו תורכם עם 8.', '⟦36 + 64 = ?⟧'], stuck: ['בואו נעשה את זה לאט, חלק אחרי חלק:', '⟦6² = 6 × 6 = 36⟧, ו-⟦8² = 8 × 8 = 64⟧.', { q: 'כמה זה ⟦36 + 64⟧?' }], src: { p: 2, x: 'משפט פיתגורס: בכל משולש ישר זווית, סכום ריבועי הניצבים שווה לריבוע היתר: ⟦a² + b² = c²⟧.' } },
+        { t: 'מוצאים את היתר', b: ['אם ⟦c² = 100⟧, אז ⟦c⟧ הוא המספר שכפול עצמו נותן 100. הנה כמה **שלשות פיתגוריות** מפורסמות:', { t: [['⟦a⟧', '⟦b⟧', '⟦c⟧'], ['3', '4', '5'], ['6', '8', '?'], ['5', '12', '13']] }], q: 'מה אורך היתר ⟦c⟧ כשהניצבים הם 6 ו-8?', ok: /(^|\D)10(\D|$)|עשר/, good: '10', bad: '14', ans: '10', yes: 'נכון! ⟦c = 10⟧, כי ⟦10 × 10 = 100⟧.', h: ['כאן לא מחברים את הצלעות. מחפשים מספר שכפול עצמו נותן 100.', '⟦10 × 10 = ?⟧'], stuck: ['אנחנו מחפשים מספר שבריבוע נותן 100.', '⟦9 × 9 = 81⟧, קטן מדי. ⟦11 × 11 = 121⟧, גדול מדי.', { q: 'איזה מספר נמצא באמצע?' }], src: { p: 2, x: 'כדי למצוא את היתר, מחשבים את סכום ריבועי הניצבים ומוציאים שורש. שלשות פיתגוריות מוכרות: ⟦(3, 4, 5)⟧, ⟦(6, 8, 10)⟧, ⟦(5, 12, 13)⟧.' } },
+        { t: 'מוצאים ניצב', b: ['אפשר גם הפוך! אם יודעים את היתר וניצב אחד, **מחסרים**:', { f: 'b^2 = c^2 − a^2' }], q: 'במשולש עם יתר ⟦c = 13⟧ וניצב ⟦a = 5⟧, מה אורך ⟦b⟧?', ok: /(^|\D)12(\D|$)|שתים עשרה|שנים עשר/, good: '12', bad: '8', ans: '12', yes: 'יפה! ⟦169 − 25 = 144⟧, ו-⟦12² = 144⟧.', h: ['⟦13² = 169⟧ ו-⟦5² = 25⟧. מה ההפרש?', '⟦169 − 25 = 144⟧. איזה מספר בריבוע נותן 144?'], stuck: ['שלושה צעדים קטנים:', '⟦13² = 169⟧, ⟦5² = 25⟧, ו-⟦169 − 25 = 144⟧.', { q: 'איזה מספר כפול עצמו נותן 144?' }], src: { p: 3, x: 'כדי למצוא ניצב, מחסירים מריבוע היתר את ריבוע הניצב הידוע: ⟦b² = c² − a²⟧.' } },
+        { t: 'האם זה ישר זווית?', b: ['המשפט עובד גם כ**בדיקה**: אם ⟦a² + b² = c²⟧, המשולש ישר זווית. אם לא, הוא לא ישר זווית.'], q: 'משולש עם צלעות 5, 6 ו-7. האם הוא ישר זווית? (כן / לא)', ok: /לא/, good: 'לא', bad: 'כן', ans: 'לא', yes: 'בדיוק. ⟦25 + 36 = 61⟧, אבל ⟦7² = 49⟧. לא שווה, אז לא ישר זווית.', h: ['חשבו ⟦5² + 6²⟧ והשוו ל-⟦7²⟧.', '⟦25 + 36 = 61⟧, ו-⟦7² = 49⟧. האם זה שווה?'], stuck: ['משווים שני מספרים:', '⟦5² + 6² = 61⟧ מול ⟦7² = 49⟧.', { q: 'הם שווים? אז האם המשולש ישר זווית?' }], src: { p: 3, x: 'המשפט ההפוך: אם במשולש מתקיים ⟦a² + b² = c²⟧, אז המשולש ישר זווית.' } },
+        { t: 'פיתגורס בעולם האמיתי', b: ['סולם באורך 5 מטר נשען על קיר. רגל הסולם רחוקה 3 מטר מהקיר.', 'הסולם, הקיר והרצפה יוצרים משולש ישר זווית, והסולם הוא היתר.'], q: 'לאיזה גובה על הקיר מגיע הסולם?', ok: /(^|\D)4(\D|$)|ארבע/, good: '4 מטר', bad: '2', ans: '4 מטר', yes: 'נכון: ⟦25 − 9 = 16⟧, ו-⟦4² = 16⟧. הסולם מגיע לגובה 4 מטר.', h: ['⟦c = 5⟧ ו-⟦a = 3⟧. משתמשים ב-⟦b² = c² − a²⟧.', '⟦25 − 9 = 16⟧. איזה מספר בריבוע נותן 16?'], stuck: ['נציב במשפט:', '⟦b² = 5² − 3² = 25 − 9 = 16⟧.', { q: 'אז מה הגובה?' }], src: { p: 3, vision: true, x: 'תרגיל 4 (לפי השרטוט): סולם באורך 5 מ׳ נשען על קיר. המרחק בין רגל הסולם לקיר הוא 3 מ׳. לאיזה גובה מגיע הסולם?' } }
+      ]
+    },
+    fr: {
+      code: 'fr', dir: 'ltr', label: 'בצרפתית', title: 'Le théorème de Pythagore', qLabel: 'Question',
+      praise: ['Bravo !', 'Excellent !', 'Pile ça !', 'Très bien !', 'Waouh, exactement !', 'Quel raisonnement !'],
+      hintT: ['Presque ! Voici un petit indice', 'Pas tout à fait, essayons autrement'], stuckT: 'Comprenons-le ensemble', offTag: 'Retour au cours',
+      offA: 'Bonne question ! Je la garde pour la fin du cours.', offB: 'En attendant, revenons à notre question :', effort: 'Ta persévérance a payé !',
+      reveal: ['Pas de souci, c’est comme ça qu’on apprend. La réponse est **{ans}**.', 'Chaque essai fait grandir ton cerveau. On continue !'],
+      idk: /sais pas|aucune idée|indice|aide/i, off: /cantine|récré|foot|tiktok/i, idkText: 'Je ne sais pas', offQ: 'C’est quoi le menu de la cantine ?', askHint: 'Un indice ?',
+      recap: ['Dans un triangle rectangle, l’**hypoténuse** est le côté le plus long, en face de l’angle droit.', 'Théorème de Pythagore : ⟦a² + b² = c²⟧. Il permet de trouver un côté manquant.', 'Il sert aussi à **vérifier** si un triangle est rectangle.'],
+      steps: [
+        { t: 'Qu’est-ce qu’un triangle rectangle ?', b: ['Salut ! Aujourd’hui, on découvre ensemble le **théorème de Pythagore**, pas à pas. À chaque étape, une seule petite question.', 'Un **triangle rectangle** a un **angle droit**, comme le coin d’un cahier.'], q: 'Combien de degrés mesure un angle droit ?', ok: /(^|\D)90(\D|$)|quatre-vingt-dix/i, good: '90', bad: '180', ans: '90°', yes: 'Exact, ⟦90°⟧ : un quart de tour.', h: ['Pense à un tour complet, ⟦360°⟧, partagé en quatre coins égaux.', 'Combien font ⟦360 ÷ 4⟧ ?'], stuck: ['Un angle droit, c’est exactement **un quart de tour**.', 'Un tour complet fait ⟦360°⟧, donc un quart fait ⟦360 ÷ 4 = 90⟧.', { q: 'Alors, combien de degrés ?' }] },
+        { t: 'Côtés et hypoténuse', b: ['Les deux côtés qui forment l’angle droit s’appellent les **côtés de l’angle droit**.', 'Le troisième côté, en face de l’angle droit, s’appelle l’**hypoténuse**.'], q: 'Quel côté est toujours le plus long dans un triangle rectangle ?', ok: /hypot/i, good: 'L’hypoténuse', bad: 'Un côté de l’angle droit', ans: 'l’hypoténuse', yes: 'Oui ! L’**hypoténuse** est toujours la plus longue.', h: ['Il se trouve en face du plus grand angle du triangle.', 'Son nom commence par « hypo… ».'], stuck: ['Dans un triangle, le plus long côté est en face du plus grand angle.', 'Ici, le plus grand angle est l’angle droit, et en face se trouve l’**hypoténuse**.', { q: 'Alors, quel côté est le plus long ?' }] },
+        { t: 'Le théorème', b: ['Voici la magie : dans un triangle rectangle, la somme des carrés des deux côtés de l’angle droit est égale au **carré de l’hypoténuse**.', { f: 'a^2 + b^2 = c^2', cap: '⟦a⟧ et ⟦b⟧ : côtés de l’angle droit · ⟦c⟧ : hypoténuse' }, 'En hébreu, on dit ⟪משפט פיתגורס⟫, et il a plus de 2 500 ans. Exemple avec 3, 4 et 5 : ⟦3² + 4² = 9 + 16 = 25 = 5²⟧.', { t: [['Côté', 'Carré'], ['3', '9'], ['4', '16'], ['5', '25']] }], q: 'À toi : si ⟦a = 6⟧ et ⟦b = 8⟧, combien vaut ⟦a² + b²⟧ ?', ok: /100|cent/i, good: '100', bad: '48', ans: '100', yes: 'Parfait : ⟦36 + 64 = 100⟧.', h: ['D’abord les carrés : ⟦6² = 36⟧. À toi pour 8.', '⟦36 + 64 = ?⟧'], stuck: ['Allons-y doucement :', '⟦6² = 6 × 6 = 36⟧ et ⟦8² = 8 × 8 = 64⟧.', { q: 'Combien font ⟦36 + 64⟧ ?' }] },
+        { t: 'Trouver l’hypoténuse', b: ['Si ⟦c² = 100⟧, alors ⟦c⟧ est le nombre qui, multiplié par lui-même, donne 100. Quelques **triplets** célèbres :', { t: [['⟦a⟧', '⟦b⟧', '⟦c⟧'], ['3', '4', '5'], ['6', '8', '?'], ['5', '12', '13']] }], q: 'Quelle est la longueur de ⟦c⟧ quand les côtés mesurent 6 et 8 ?', ok: /(^|\D)10(\D|$)|dix/i, good: '10', bad: '14', ans: '10', yes: 'Bravo, ⟦c = 10⟧, car ⟦10 × 10 = 100⟧.', h: ['Ici, on n’additionne pas les côtés. Cherche un nombre qui, au carré, donne 100.', '⟦10 × 10 = ?⟧'], stuck: ['On cherche un nombre dont le carré vaut 100.', '⟦9 × 9 = 81⟧, trop petit. ⟦11 × 11 = 121⟧, trop grand.', { q: 'Quel nombre est entre les deux ?' }] },
+        { t: 'Trouver un côté', b: ['On peut aussi faire l’inverse ! Si on connaît l’hypoténuse et un côté, on **soustrait** :', { f: 'b^2 = c^2 − a^2' }], q: 'Avec ⟦c = 13⟧ et ⟦a = 5⟧, combien mesure ⟦b⟧ ?', ok: /(^|\D)12(\D|$)|douze/i, good: '12', bad: '8', ans: '12', yes: 'Super ! ⟦169 − 25 = 144⟧ et ⟦12² = 144⟧.', h: ['⟦13² = 169⟧ et ⟦5² = 25⟧. Quelle est la différence ?', '⟦169 − 25 = 144⟧. Quel nombre au carré donne 144 ?'], stuck: ['Trois petites étapes :', '⟦13² = 169⟧, ⟦5² = 25⟧, puis ⟦169 − 25 = 144⟧.', { q: 'Quel nombre multiplié par lui-même donne 144 ?' }] },
+        { t: 'Est-il rectangle ?', b: ['Le théorème sert aussi de **test** : si ⟦a² + b² = c²⟧, le triangle est rectangle. Sinon, il ne l’est pas.'], q: 'Un triangle a des côtés de 5, 6 et 7. Est-il rectangle ? (oui / non)', ok: /\bnon\b/i, good: 'Non', bad: 'Oui', ans: 'non', yes: 'Exactement. ⟦25 + 36 = 61⟧, mais ⟦7² = 49⟧. Pas égal, donc pas rectangle.', h: ['Calcule ⟦5² + 6²⟧ et compare avec ⟦7²⟧.', '⟦25 + 36 = 61⟧ et ⟦7² = 49⟧. C’est égal ?'], stuck: ['On compare deux nombres :', '⟦5² + 6² = 61⟧ contre ⟦7² = 49⟧.', { q: 'Sont-ils égaux ? Alors, rectangle ou pas ?' }] },
+        { t: 'Pythagore dans la vraie vie', b: ['Une échelle de 5 m est appuyée contre un mur. Son pied est à 3 m du mur.', 'L’échelle, le mur et le sol forment un triangle rectangle, et l’échelle est l’hypoténuse.'], q: 'À quelle hauteur l’échelle touche-t-elle le mur ?', ok: /(^|\D)4(\D|$)|quatre/i, good: '4 m', bad: '2', ans: '4 m', yes: 'Oui : ⟦25 − 9 = 16⟧ et ⟦4² = 16⟧. L’échelle touche le mur à 4 m.', h: ['⟦c = 5⟧ et ⟦a = 3⟧. On utilise ⟦b² = c² − a²⟧.', '⟦25 − 9 = 16⟧. Quel nombre au carré donne 16 ?'], stuck: ['On remplace dans la formule :', '⟦b² = 5² − 3² = 25 − 9 = 16⟧.', { q: 'Alors, quelle hauteur ?' }] }
+      ]
+    }
+  };
+  state = { screen: 'setup', device: 'desktop', theme: 'calm', lang: 'he', rm: false, sound: false, scale: 1,
+    settingsOpen: false, provider: 'Gemini', model: 'gemini-2.5-flash', baseUrl: '', apiKey: '', showKey: false, vision: true, remember: false,
+    file: null, fileErr: null, drag: false, prompt: '', continuing: false, building: false, buildStep: 0,
+    msgs: [], step: 0, done: [], hintsUsed: {}, stuckDone: {}, tries: {}, totalHints: 0, totalTries: 0, saved: null,
+    thinking: false, streaming: null, input: '', source: null, outline: false, glow: false, starPop: -1, error: null, retrying: false };
+  chatRef = React.createRef(); frameRef = React.createRef(); confRef = React.createRef(); wrapRef = React.createRef(); fileRef = React.createRef();
+  timers = []; nid = 1; pi = 0; uid = 'p' + Math.random().toString(36).slice(2, 7);
+
+  P() { const p = this.props || {}; const b = v => v === true || v === 'true'; return { theme: p.theme || 'calm', device: p.device || 'desktop', lang: p.lessonLang || 'he', start: p.start || 'setup', rm: b(p.reducedMotion), chrome: !(p.chrome === false || p.chrome === 'false') }; }
+  L() { return this.constructor.D[this.state.lang]; }
+  t(fn, ms) { const id = setTimeout(fn, ms); this.timers.push(id); return id; }
+  clearAll() { this.timers.forEach(clearTimeout); this.timers = []; clearInterval(this.iv); this.iv = null; this.after = null; this.pendingAfter = null; this.stopReq = false; cancelAnimationFrame(this.raf); }
+  componentDidMount() {
+    const p = this.P();
+    const sysRm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.setState({ theme: p.theme, device: p.device, lang: p.lang, rm: p.rm || sysRm }, () => { this.go(p.start); this.fit(); });
+    this.scrollIv = setInterval(() => {
+      const el = this.chatRef.current, s = this.state, last = s.msgs[s.msgs.length - 1];
+      const sig = s.screen + s.device + s.msgs.length + ':' + s.thinking + ':' + (last ? last.reveal : 0) + ':' + !!s.error;
+      if (!el) { this.lastSig = null; return; }
+      if (sig !== this.lastSig) { this.lastSig = sig; el.scrollTop = el.scrollHeight; }
+    }, 120);
+    if (window.ResizeObserver && this.wrapRef.current) { this.ro = new ResizeObserver(() => this.fit()); this.ro.observe(this.wrapRef.current); }
+  }
+  componentWillUnmount() { this.clearAll(); clearInterval(this.scrollIv); this.ro && this.ro.disconnect(); }
+  componentDidUpdate(prev) {
+    const a = prev || {}, b = this.props || {};
+    if (a.theme !== b.theme && b.theme) this.setState({ theme: b.theme });
+    if (a.device !== b.device && b.device) this.setState({ device: b.device }, () => this.fit());
+    if (a.lessonLang !== b.lessonLang && b.lessonLang) this.setLang(b.lessonLang);
+    if (a.start !== b.start && b.start) this.go(b.start);
+    if (a.reducedMotion !== b.reducedMotion) this.setState({ rm: b.reducedMotion === true || b.reducedMotion === 'true' });
+  }
+  fit() {
+    const w = this.wrapRef.current; if (!w) return;
+    const mob = this.state.device === 'mobile', fw = mob ? 395 : 1282;
+    const s = this.P().chrome ? Math.min(1, (w.clientWidth - 48) / fw) : 1;
+    if (Math.abs(s - this.state.scale) > .004) this.setState({ scale: s });
+  }
+  demoFile() { return { name: 'פיתגורס_כיתה_ז.pdf', size: 2.4 * 1048576, type: 'application/pdf' }; }
+  base() { return { settingsOpen: false, source: null, outline: false, error: null, thinking: false, streaming: null, continuing: false, building: false, glow: false, starPop: -1, input: '' }; }
+  go(sc) {
+    this.clearAll();
+    const b = this.base();
+    if (sc === 'setup') this.setState({ ...b, screen: 'setup', file: null, fileErr: null, prompt: '', msgs: [] });
+    else if (sc === 'report') this.setState({ ...b, screen: 'report', file: this.state.file && !this.state.fileErr ? this.state.file : this.demoFile(), fileErr: null, apiKey: this.state.apiKey || 'AIza-demo-key-1234' });
+    else if (sc === 'lesson') this.setState({ ...b, screen: 'lesson', file: this.state.file && !this.state.fileErr ? this.state.file : this.demoFile(), ...this.seed() });
+    else if (sc === 'complete') this.setState({ ...b, screen: 'complete', file: this.state.file || this.demoFile(), ...this.seed(), done: [0, 1, 2, 3, 4, 5, 6], step: 6, totalHints: 2, totalTries: 9, saved: this.L().offQ }, () => this.t(() => this.burst('finale'), 300));
+  }
+  setLang(l) { this.setState({ lang: l }, () => { if (this.state.screen === 'lesson' || this.state.screen === 'complete') this.go(this.state.screen); }); }
+  seed() {
+    const D = this.L(), S = D.steps, n = () => this.nid++;
+    this.pi = 3;
+    return { step: 2, done: [0, 1], hintsUsed: { 1: 1 }, stuckDone: {}, tries: { 1: 1 }, totalHints: 1, totalTries: 3, saved: null, msgs: [
+      { id: n(), from: 'tutor', kind: 'text', blocks: [...S[1].b, { q: S[1].q }], step: 1, mood: 'talk', seeded: true },
+      { id: n(), from: 'student', kind: 'text', text: S[1].bad, seeded: true },
+      { id: n(), from: 'tutor', kind: 'hint', blocks: [S[1].h[0]], lamp: 1, title: D.hintT[0], step: 1, mood: 'encourage', seeded: true },
+      { id: n(), from: 'student', kind: 'text', text: S[1].good, seeded: true },
+      { id: n(), from: 'tutor', kind: 'correct', blocks: [S[1].yes + ' ' + D.effort], praise: D.praise[2], step: 1, mood: 'cheer', seeded: true },
+      { id: n(), from: 'sys', kind: 'ribbon', step: 1, title: S[1].t, seeded: true },
+      { id: n(), from: 'tutor', kind: 'text', blocks: [...S[2].b, { q: S[2].q }], step: 2, mood: 'talk', seeded: true }] };
+  }
+  fresh() { return { msgs: [], step: 0, done: [], hintsUsed: {}, stuckDone: {}, tries: {}, totalHints: 0, totalTries: 0, saved: null }; }
+
+  plain(s) { return s.replace(/\*\*|⟦|⟧|⟪|⟫/g, ''); }
+  lenOf(bl) { return bl.reduce((a, b) => a + (typeof b === 'string' ? this.plain(b).length : b.q ? this.plain(b.q).length : b.f ? 12 : 24), 0); }
+  math(s) {
+    const h = React.createElement, out = []; let i = 0, k = 0;
+    const L = c => /[a-z]/i.test(c || '');
+    while (i < s.length) {
+      const c = s[i];
+      if (c === '^') { out.push(h('sup', { key: k++, style: { fontSize: '.68em' } }, s[i + 1] || '')); i += 2; continue; }
+      if (L(c) && !L(s[i + 1]) && !L(s[i - 1])) { out.push(h('i', { key: k++ }, c)); i++; continue; }
+      let j = i + 1; while (j < s.length && s[j] !== '^' && !(L(s[j]) && !L(s[j + 1]) && !L(s[j - 1]))) j++;
+      out.push(s.slice(i, j)); i = j;
+    }
+    return out;
+  }
+  inline(s, lim) {
+    const h = React.createElement, parts = s.split(/(\*\*[^*]+\*\*|⟦[^⟧]+⟧|⟪[^⟫]+⟫)/).filter(Boolean); let used = 0; const out = [];
+    for (let i = 0; i < parts.length && used < lim; i++) {
+      let p = parts[i], ty = 't';
+      if (p.startsWith('**')) { ty = 'b'; p = p.slice(2, -2); } else if (p[0] === '⟦') { ty = 'm'; p = p.slice(1, -1); } else if (p[0] === '⟪') { ty = 'i'; p = p.slice(1, -1); }
+      const take = p.slice(0, lim - used); used += p.length;
+      if (ty === 't') out.push(take);
+      else if (ty === 'b') out.push(h('strong', { key: i, style: { fontWeight: 700 } }, take));
+      else if (ty === 'm') out.push(h('bdi', { key: i, dir: 'ltr', style: { fontFamily: "'STIX Two Text', serif", fontSize: '1.1em', whiteSpace: 'nowrap' } }, this.math(take)));
+      else out.push(h('bdi', { key: i, dir: 'auto', style: { fontWeight: 500 } }, take));
+    }
+    return [out, Math.min(used, lim)];
+  }
+  blocks(bl, lim) {
+    const h = React.createElement, D = this.L(); let left = lim == null ? 1e9 : lim; const out = [];
+    bl.forEach((b, i) => {
+      if (left <= 0) return;
+      if (typeof b === 'string') { const [n, u] = this.inline(b, left); left -= u; out.push(h('p', { key: i, style: { margin: 0, textWrap: 'pretty' } }, n)); }
+      else if (b.q) { const [n, u] = this.inline(b.q, left); left -= u; out.push(h('div', { key: i, style: { display: 'flex', gap: 10, alignItems: 'flex-start', padding: '10px 14px', borderRadius: 12, background: 'var(--p-soft)', color: 'var(--p-ink)', fontWeight: 600 } }, h('span', { style: { flex: 'none', fontSize: 12, fontWeight: 700, padding: '2px 9px', borderRadius: 999, background: 'var(--p)', color: 'var(--on-p)', marginTop: 4, lineHeight: 1.6 } }, D.qLabel), h('span', { style: { minWidth: 0 } }, n))); }
+      else if (b.f) { left -= 12; out.push(h('div', { key: i, style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '14px 12px', background: 'var(--surf2)', borderRadius: 12 } }, h('div', { dir: 'ltr', role: 'math', 'aria-label': b.f.replace(/\^2/g, '²'), style: { fontFamily: "'STIX Two Text', serif", fontSize: 28, lineHeight: 1.3, color: 'var(--ink)' } }, this.math(b.f)), b.cap ? h('div', { style: { fontSize: 14, color: 'var(--ink2)', textAlign: 'center' } }, this.inline(b.cap, 1e9)[0]) : null)); }
+      else if (b.t) {
+        left -= 24;
+        const cell = (c, j, head, ri) => h(head ? 'th' : 'td', { key: j, style: { padding: '7px 18px', fontWeight: head ? 600 : c === '?' ? 700 : 400, background: head ? 'var(--surf2)' : c === '?' ? 'var(--acc-soft)' : 'transparent', borderTop: !head ? '1px solid var(--line)' : 'none', fontFamily: head ? 'inherit' : "'STIX Two Text', serif", fontSize: head ? 15 : 18 } }, head ? this.inline(c, 1e9)[0] : h('bdi', { dir: 'ltr' }, c));
+        out.push(h('div', { key: i, style: { overflowX: 'auto' } }, h('table', { style: { borderCollapse: 'separate', borderSpacing: 0, border: '1px solid var(--line)', borderRadius: 12, overflow: 'hidden', textAlign: 'center' } }, h('thead', null, h('tr', null, b.t[0].map((c, j) => cell(c, j, true)))), h('tbody', null, b.t.slice(1).map((r, ri) => h('tr', { key: ri }, r.map((c, j) => cell(c, j, false, ri))))))));
+      }
+    });
+    return out;
+  }
+  sparkles() {
+    if (this.state.rm) return null; const h = React.createElement;
+    return Array.from({ length: 10 }, (_, i) => { const a = i / 10 * Math.PI * 2; return h('span', { key: i, 'aria-hidden': true, style: { position: 'absolute', top: '50%', left: '50%', width: 9, height: 9, margin: '-4.5px 0 0 -4.5px', background: i % 2 ? 'var(--acc)' : 'var(--hint)', clipPath: 'polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%)', '--dx': Math.round(Math.cos(a) * 62) + 'px', '--dy': Math.round(Math.sin(a) * 34) + 'px', animation: `pm-sparkle .7s ${120 + i * 12}ms cubic-bezier(.2,.7,.3,1) both`, pointerEvents: 'none' } }); });
+  }
+  conf() { if (!this._c && window.confetti && this.confRef.current) this._c = window.confetti.create(this.confRef.current, { resize: true, useWorker: false }); return this._c; }
+  rel(sel) { const f = this.frameRef.current, b = f && f.querySelector(sel); if (!f || !b) return null; const fr = f.getBoundingClientRect(), br = b.getBoundingClientRect(); return { x: (br.left + br.width / 2 - fr.left) / fr.width, y: (br.top + br.height / 2 - fr.top) / fr.height }; }
+  burst(kind, id) {
+    if (this.state.rm) return; const c = this.conf(); if (!c) return;
+    const T = this.constructor.TH[this.state.theme], colors = [T['--acc'], T['--p'], T['--ok'], T['--hint'], T['--tc']];
+    if (kind === 'small') c({ particleCount: 24, spread: 70, startVelocity: 18, gravity: .9, scalar: .7, ticks: 70, origin: this.rel(`[data-badge="${id}"]`) || { x: .6, y: .6 }, colors });
+    else if (kind === 'big') { const o = this.rel('[data-path]') || { x: .5, y: .1 }; c({ particleCount: 70, spread: 110, startVelocity: 26, scalar: .85, ticks: 110, origin: { x: o.x, y: o.y + .02 }, angle: 270, colors }); }
+    else { const end = Date.now() + 2200; const fr = () => { c({ particleCount: 4, angle: 60, spread: 60, origin: { x: 0, y: .7 }, colors }); c({ particleCount: 4, angle: 120, spread: 60, origin: { x: 1, y: .7 }, colors }); if (Date.now() < end) this.raf = requestAnimationFrame(fr); }; fr(); }
+  }
+  chime(big) {
+    if (!this.state.sound) return;
+    try { const A = this._ac || (this._ac = new (window.AudioContext || window.webkitAudioContext)()); (big ? [523, 659, 784, 1047] : [660, 880]).forEach((f, i) => { const o = A.createOscillator(), g = A.createGain(), t0 = A.currentTime + i * .09; o.type = 'sine'; o.frequency.value = f; g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(.12, t0 + .02); g.gain.exponentialRampToValueAtTime(.001, t0 + .35); o.connect(g).connect(A.destination); o.start(t0); o.stop(t0 + .4); }); } catch (e) {}
+  }
+  tutorSay(kind, blocks, extra, after) {
+    this.setState({ thinking: true });
+    this.t(() => {
+      const id = this.nid++, total = this.lenOf(blocks);
+      const m = { id, from: 'tutor', kind, blocks, step: this.state.step, mood: 'talk', reveal: this.state.rm ? total : 0, total, ...(extra || {}) };
+      if (this.stopReq) { this.stopReq = false; m.stopped = true; this.pendingAfter = after; this.setState(s => ({ thinking: false, msgs: [...s.msgs, m] })); return; }
+      this.setState(s => ({ thinking: false, msgs: [...s.msgs, m] }), () => { if (kind === 'correct') { this.t(() => this.burst('small', id), 120); this.chime(false); } this.stream(id, after); });
+    }, this.state.rm ? 400 : 800);
+  }
+  stream(id, after) {
+    this.after = after; this.setState({ streaming: id }); clearInterval(this.iv);
+    this.iv = setInterval(() => {
+      let fin = false;
+      this.setState(s => ({ msgs: s.msgs.map(m => { if (m.id !== id) return m; const r = Math.min(m.total, (m.reveal || 0) + 4); if (r >= m.total) fin = true; return { ...m, reveal: r }; }) }), () => {
+        if (fin && this.state.streaming === id) { clearInterval(this.iv); this.iv = null; this.setState({ streaming: null }); const a = this.after; this.after = null; a && a(); }
+      });
+    }, 18);
+  }
+  stop = () => {
+    if (this.state.streaming != null) { const id = this.state.streaming; clearInterval(this.iv); this.iv = null; this.pendingAfter = this.after; this.after = null; this.setState(s => ({ streaming: null, msgs: s.msgs.map(m => m.id === id ? { ...m, stopped: true } : m) })); }
+    else if (this.state.thinking) this.stopReq = true;
+  };
+  resume(id) { const a = this.pendingAfter; this.pendingAfter = null; this.setState(s => ({ msgs: s.msgs.map(m => m.id === id ? { ...m, stopped: false } : m) }), () => this.stream(id, a)); }
+  busy() { return this.state.thinking || this.state.streaming != null; }
+  send(text) {
+    text = (text == null ? this.state.input : text).trim(); if (!text || this.busy() || this.state.screen !== 'lesson') return;
+    this.setState(s => ({ input: '', msgs: [...s.msgs, { id: this.nid++, from: 'student', kind: 'text', text }] }), () => this.evaluate(text));
+  }
+  evaluate(text) {
+    const D = this.L(), S = D.steps[this.state.step]; if (!S) return;
+    if (D.idk.test(text)) return this.hint();
+    if (S.ok.test(text)) return this.correct();
+    if (D.off.test(text) || (/\?\s*$/.test(text) && !/\d/.test(text))) return this.offtopic(text);
+    this.wrong();
+  }
+  wrong() { const st = this.state.step; this.setState(s => ({ tries: { ...s.tries, [st]: (s.tries[st] || 0) + 1 }, totalTries: s.totalTries + 1 })); if (this.state.stuckDone[st]) return this.reveal(); this.hint(); }
+  hint() {
+    const st = this.state.step, D = this.L(), S = D.steps[st], hu = this.state.hintsUsed[st] || 0;
+    if (hu < 2) { this.setState(s => ({ hintsUsed: { ...s.hintsUsed, [st]: hu + 1 }, totalHints: s.totalHints + 1 })); this.tutorSay('hint', [S.h[hu]], { lamp: hu + 1, title: D.hintT[hu], mood: 'encourage' }); }
+    else if (!this.state.stuckDone[st]) { this.setState(s => ({ stuckDone: { ...s.stuckDone, [st]: true } })); this.tutorSay('stuck', S.stuck, { mood: 'lean', title: D.stuckT }); }
+    else this.reveal();
+  }
+  reveal() { const D = this.L(), S = D.steps[this.state.step]; this.tutorSay('text', D.reveal.map(x => x.replace('{ans}', S.ans)), { mood: 'encourage' }, () => this.t(() => this.completeStep(), 500)); }
+  correct() {
+    const D = this.L(), st = this.state.step, S = D.steps[st], praise = D.praise[this.pi++ % D.praise.length];
+    const effort = (this.state.tries[st] || 0) > 0 || (this.state.hintsUsed[st] || 0) > 0;
+    this.setState(s => ({ totalTries: s.totalTries + 1 }));
+    this.tutorSay('correct', [S.yes + (effort ? ' ' + D.effort : '')], { praise, mood: 'cheer' }, () => this.t(() => this.completeStep(), 450));
+  }
+  offtopic(text) { const D = this.L(), S = D.steps[this.state.step]; if (!this.state.saved) this.setState({ saved: text }); this.tutorSay('off', [D.offA, D.offB, { q: S.q }], { mood: 'talk', tag: D.offTag }); }
+  completeStep() {
+    const st = this.state.step, D = this.L(), n = D.steps.length;
+    this.setState(s => ({ done: s.done.includes(st) ? s.done : [...s.done, st], starPop: st, glow: true, msgs: [...s.msgs, { id: this.nid++, from: 'sys', kind: 'ribbon', step: st, title: D.steps[st].t }] }), () => { this.burst('big'); this.chime(true); });
+    this.t(() => {
+      this.setState({ glow: false });
+      if (st >= n - 1) this.t(() => { this.setState({ screen: 'complete', source: null, outline: false }); this.t(() => this.burst('finale'), 250); }, 500);
+      else { this.setState({ step: st + 1 }); this.tutorSay('text', [...D.steps[st + 1].b, { q: D.steps[st + 1].q }], { mood: 'talk' }); }
+    }, 1200);
+  }
+  takeFile(f) {
+    const ext = (f.name.split('.').pop() || '').toLowerCase();
+    const audio = /^audio\//.test(f.type || '') || ['mp3', 'wav', 'm4a', 'ogg', 'aac'].includes(ext);
+    const ok = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'jpg', 'jpeg', 'png', 'heic', 'webp', 'txt'].includes(ext);
+    if (audio) return this.setState({ file: f, fileErr: 'audio', drag: false });
+    if (!ok) return this.setState({ file: f, fileErr: 'type', drag: false });
+    if (f.size > 20 * 1048576) return this.setState({ file: f, fileErr: 'size', drag: false });
+    this.setState({ file: f, fileErr: null, drag: false });
+  }
+  fmt(b) { return b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB'; }
+  reason() { const s = this.state; if (!s.file) return { msg: 'הוסיפו קובץ כדי להמשיך' }; if (s.fileErr) return { msg: 'החליפו את הקובץ בקובץ נתמך' }; if (s.apiKey.trim().length < 6) return { msg: 'הוסיפו מפתח API', act: 'לפתיחת ההגדרות' }; return null; }
+  icons() {
+    if (this._I) return this._I;
+    const h = React.createElement;
+    const ic = (d, sz = 20, fill) => h('svg', { width: sz, height: sz, viewBox: '0 0 24 24', fill: fill ? 'currentColor' : 'none', stroke: fill ? 'none' : 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true, style: { flex: 'none' } }, d.split('|').map((x, i) => h('path', { key: i, d: x })));
+    const P = { upload: 'M12 15V4|M7.5 8.5L12 4l4.5 4.5|M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4', file: 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z|M14 3v5h5', x: 'M6 6l12 12|M18 6L6 18', eye: 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z|M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z', eyeOff: 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z|M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z|M3 3l18 18', sliders: 'M4 7h9|M17 7h3|M4 17h3|M11 17h9|M15 4.5v5|M9 14.5v5', send: 'M20 12H5|M11 6l-6 6 6 6', arrowL: 'M19 12H5|M11 6l-6 6 6 6', arrowR: 'M5 12h14|M13 6l6 6-6 6', bulb: 'M9 18h6|M10 21h4|M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z', list: 'M9 6h11|M9 12h11|M9 18h11|M4.5 6h.01|M4.5 12h.01|M4.5 18h.01', book: 'M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z|M5 19.5A1.5 1.5 0 0 0 6.5 21H19|M9 7h6', refresh: 'M20 11a8 8 0 1 0-2.3 5.7|M20 4v7h-7', wifiOff: 'M8.5 16a5 5 0 0 1 7 0|M5 12.5a10 10 0 0 1 4-2.3|M19 12.5a10 10 0 0 0-2.4-1.7|M2 8.8a15 15 0 0 1 4-2.3|M11 5a15 15 0 0 1 11 3.8|M12 20h.01|M3 3l18 18', key: 'M14.5 4a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11z|M10.5 13.5L3 21|M6 18l2.5 2.5', clock: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z|M12 7v5l3 2', alert: 'M12 3.5l9.5 16.5h-19z|M12 10v4|M12 17h.01', lock: 'M6 11h12v9H6z|M8.5 11V8a3.5 3.5 0 0 1 7 0v3', info: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z|M12 11v5|M12 8h.01', skip: 'M19 6l-6 6 6 6|M11 6l-6 6 6 6', text: 'M5 6h14|M12 6v13', check: 'M5 12.5l4.5 4.5L19 7.5', hands: 'M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z', compass: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z|M15.5 8.5l-2 5-5 2 2-5z', plus: 'M12 5v14|M5 12h14', ban: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z|M5.6 5.6l12.8 12.8' };
+    const I = {}; Object.keys(P).forEach(k => I[k] = ic(P[k]));
+    I.upload28 = ic(P.upload, 28); I.file14 = ic(P.file, 14); I.check16 = ic(P.check, 16); I.eye16 = ic(P.eye, 16); I.text16 = ic(P.text, 16); I.skip16 = ic(P.skip, 16); I.alert16 = ic(P.alert, 16);
+    I.stop = ic('M7 7h10v10H7z', 18, true); I.sparkle = ic('M12 3l2.2 6.3L20.5 11.5l-6.3 2.2L12 20l-2.2-6.3L3.5 11.5l6.3-2.2z', 18, true);
+    return (this._I = I);
+  }
+
+  renderVals() {
+    const s = this.state, p = this.P(), T = this.constructor.TH[s.theme] || this.constructor.TH.calm, D = this.L(), mob = s.device === 'mobile', rm = s.rm, I = this.icons();
+    const fw = mob ? 375 : 1280, fh = mob ? 780 : 800, bw = mob ? 10 : 1, ow = fw + bw * 2, oh = fh + bw * 2, sc = p.chrome ? s.scale : 1;
+    const A = v => (rm ? 'none' : v);
+    const F = v => (rm ? 'pm-fade .2s ease both' : v);
+    const tb = (label, opts) => ({ label, opts: opts.map(([l, on, fn]) => ({ label: l, on, onClick: fn, style: { height: 30, padding: '0 12px', borderRadius: 999, border: 0, cursor: 'pointer', fontSize: 13, fontWeight: 500, background: on ? '#1c2b2d' : 'transparent', color: on ? '#fff' : '#2a2a2a' } })) });
+    const errs = { key: { icon: I.key, title: 'מפתח ה-API לא תקין', body: 'בדקו שהעתקתם את כל המפתח, או צרו מפתח חדש אצל הספק.', act2: 'להגדרות' }, rate: { icon: I.clock, title: 'יותר מדי בקשות, נסו שוב בעוד כמה שניות', body: 'הספק מגביל את מספר הבקשות בדקה. זה קורה, ואין צורך לעשות דבר.' }, offline: { icon: I.wifiOff, title: 'אין חיבור לאינטרנט', body: 'השיחה שמורה. כשהחיבור יחזור, נמשיך בדיוק מאותה נקודה.' }, server: { icon: I.alert, title: 'משהו השתבש, נסו שוב', body: 'הבעיה אצל ספק ה-AI, לא אצלכם.' } };
+    const goErr = k => () => { if (s.screen !== 'lesson') this.go('lesson'); this.setState({ error: k }); };
+    const toolbar = [
+      tb('מסך', [['הגדרה', s.screen === 'setup', () => this.go('setup')], ['דוח קריאה', s.screen === 'report', () => this.go('report')], ['שיעור', s.screen === 'lesson', () => this.go('lesson')], ['סיום', s.screen === 'complete', () => this.go('complete')]]),
+      tb('מכשיר', [['מחשב', !mob, () => this.setState({ device: 'desktop' }, () => this.fit())], ['נייד', mob, () => this.setState({ device: 'mobile' }, () => this.fit())]]),
+      tb('כיוון', [['מאמן רגוע', s.theme === 'calm', () => this.setState({ theme: 'calm' })], ['הרפתקה בהירה', s.theme === 'bright', () => this.setState({ theme: 'bright' })]]),
+      tb('שפת השיעור', [['עברית', s.lang === 'he', () => this.setLang('he')], ['Français', s.lang === 'fr', () => this.setLang('fr')]]),
+      tb('תנועה', [['מלאה', !rm, () => this.setState({ rm: false })], ['מופחתת', rm, () => this.setState({ rm: true })]]),
+      tb('שגיאה', [['מפתח', s.error === 'key', goErr('key')], ['עומס', s.error === 'rate', goErr('rate')], ['רשת', s.error === 'offline', goErr('offline')], ['שרת', s.error === 'server', goErr('server')]])
+    ];
+    const L = { pad: mob ? '16px 16px 32px' : '28px 24px 56px', h1: mob ? '28px' : '40px', h2: mob ? '24px' : '32px', lead: mob ? '16px' : '18px', heroTutor: mob ? 64 : 84, doneTutor: mob ? 104 : 132, headPad: mob ? '8px 12px 10px' : '12px 24px', chatPad: mob ? '16px 12px 20px' : '28px 24px 28px', av: mob ? 32 : 40, avPx: mob ? '32px' : '40px', inputPad: mob ? '10px 12px 14px' : '12px 24px 18px', outlineLabel: mob ? 'מפה' : 'מפת השיעור', pageMin: mob ? '140px' : '150px', hintText: !mob };
+    const reason = this.reason(), dis = !!reason || s.continuing;
+    const btnBase = { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, height: 56, padding: '0 28px', borderRadius: 'var(--r)', border: 0, fontWeight: 600, fontSize: 18, transition: 'transform .16s cubic-bezier(.23,1,.32,1), filter .16s ease, background-color .2s ease', width: '100%' };
+    const contBtn = reason ? { ...btnBase, background: 'var(--surf2)', color: 'var(--ink2)', cursor: 'not-allowed', boxShadow: 'none', border: '1.5px dashed var(--line-strong)' } : { ...btnBase, background: 'var(--p)', color: 'var(--on-p)', cursor: s.continuing ? 'progress' : 'pointer', boxShadow: 'var(--sh-btn)' };
+    const f = s.file;
+    const dzStyle = { position: 'relative', borderRadius: 'var(--rl)', border: `2px ${s.drag ? 'solid' : 'dashed'} ${s.drag ? 'var(--p)' : 'var(--line-strong)'}`, background: s.drag ? 'var(--p-soft)' : 'var(--surf)', padding: mob ? '30px 16px' : '44px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, textAlign: 'center', cursor: 'pointer', transition: 'background .2s, border-color .2s', animation: s.drag && !rm ? 'pm-wiggle .45s ease-in-out infinite' : 'none' };
+    const dzIcon = { width: 60, height: 60, borderRadius: '50%', display: 'grid', placeItems: 'center', background: s.drag ? 'var(--p)' : 'var(--p-soft)', color: s.drag ? 'var(--on-p)' : 'var(--p)', transition: 'background-color .2s ease, color .2s ease, transform .2s cubic-bezier(.23,1,.32,1)', transform: s.drag ? 'translateY(-4px)' : 'none' };
+    const errCopy = { audio: ['קבצי שמע עדיין לא נתמכים', 'אפשר להעלות PDF, Word, מצגת או צילום של דף.'], type: ['את סוג הקובץ הזה עוד לא הצלחנו לקרוא', 'נסו PDF, Word, מצגת או תמונה.'], size: ['הקובץ גדול מדי', 'המקסימום הוא 20 MB. אפשר לפצל את הקובץ או לשמור אותו באיכות נמוכה יותר.'] }[s.fileErr] || ['', ''];
+    const chip = (bg, fg) => ({ display: 'inline-flex', alignItems: 'center', gap: 6, alignSelf: 'flex-start', padding: '4px 10px', borderRadius: 999, background: bg, color: fg, fontSize: 13, fontWeight: 600 });
+    const thumb = (pat) => ({ height: 110, borderRadius: 8, display: 'grid', placeItems: 'center', background: pat, boxShadow: 'var(--ring)' });
+    const stripe = c => `repeating-linear-gradient(135deg, ${c} 0 8px, transparent 8px 16px), var(--surf2)`;
+    const pages = [
+      { n: 1, label: 'נקרא כטקסט', icon: I.text16, chip: chip('var(--ok-soft)', 'var(--ok-ink)'), thumb: thumb(stripe('rgba(0,0,0,.03)')), ph: 'עמוד טקסט' },
+      { n: 2, label: 'נקרא כטקסט', icon: I.text16, chip: chip('var(--ok-soft)', 'var(--ok-ink)'), thumb: thumb(stripe('rgba(0,0,0,.03)')), ph: 'עמוד טקסט' },
+      { n: 3, label: 'נקרא בעזרת ראייה', icon: I.eye16, chip: chip('var(--info-soft)', 'var(--info-ink)'), thumb: thumb(stripe('rgba(0,0,0,.03)')), ph: 'שרטוט' },
+      { n: 4, label: 'דולג', icon: I.skip16, chip: chip('var(--surf2)', 'var(--ink2)'), thumb: thumb('var(--surf)'), ph: 'עמוד ריק' },
+      { n: 5, label: 'לא ניתן לקרוא', icon: I.alert16, chip: chip('var(--hint-soft)', 'var(--hint-ink)'), thumb: thumb(stripe('rgba(0,0,0,.07)')), ph: 'סריקה מטושטשת' }
+    ];
+    pages.forEach((pg, i) => { pg.anim = F(`pm-pop .3s ${i * 50}ms cubic-bezier(.23,1,.32,1) both`); });
+    const bl = ['קוראים את הקובץ', 'מחלקים את החומר ל-7 שלבים', 'מכינים שאלות ורמזים'];
+    const buildSteps = bl.map((label, i) => { const done = s.buildStep > i, cur = s.buildStep === i; return { label, color: done || cur ? 'var(--ink)' : 'var(--ink2)', icon: done ? I.check16 : null, dot: { width: 22, height: 22, borderRadius: '50%', display: 'grid', placeItems: 'center', background: done ? 'var(--ok)' : 'transparent', color: '#fff', border: done ? 0 : `2px solid ${cur ? 'var(--p)' : 'var(--line-strong)'}`, animation: cur ? A('pm-light 1s ease-out infinite') : 'none' } }; });
+    const shim = { background: 'linear-gradient(90deg,var(--surf2) 0%,var(--line) 50%,var(--surf2) 100%)', backgroundSize: '200% 100%', animation: rm ? 'none' : 'pm-shimmer 1.3s linear infinite' };
+    const skeletons = [['70%', '45%'], ['55%', '80%'], ['65%', '35%']].map(([a, b]) => ({ c: { ...shim, width: 36, height: 36, borderRadius: '50%', flex: 'none' }, l1: { ...shim, height: 12, borderRadius: 6, width: a }, l2: { ...shim, height: 10, borderRadius: 6, width: b } }));
+    const lastTutor = (() => { for (let i = s.msgs.length - 1; i >= 0; i--) if (s.msgs[i].from === 'tutor') return s.msgs[i].id; return -1; })();
+    const busy = this.busy();
+    const msgs = s.msgs.map(m => {
+      const T2 = m.from === 'tutor', streaming = s.streaming === m.id, src = this.constructor.D.he.steps[m.step] && this.constructor.D.he.steps[m.step].src;
+      const bub = { padding: mob ? '12px 15px' : '14px 18px', borderRadius: 'var(--rl)', borderEndStartRadius: 6, background: 'var(--tb)', border: 0, boxShadow: 'var(--sh)', color: 'var(--ink)', minWidth: 0, maxWidth: '100%', transition: 'background .4s' };
+      if (m.kind === 'correct') Object.assign(bub, { background: 'var(--ok-soft)', boxShadow: '0 0 0 1px var(--ok-line)' });
+      if (m.kind === 'hint') Object.assign(bub, { background: 'var(--hint-soft)', boxShadow: '0 0 0 1px var(--hint-line)' });
+      if (m.kind === 'stuck') Object.assign(bub, { background: 'var(--info-soft)', boxShadow: '0 0 0 1px var(--info-line)' });
+      if (m.kind === 'off') Object.assign(bub, { background: 'var(--surf2)', boxShadow: 'none' });
+      const lamp = on => ({ width: 11, height: 11, borderRadius: '50%', background: on ? 'var(--hint)' : 'transparent', border: '2px solid ' + (on ? '#d9a400' : 'var(--hint-line)'), boxShadow: on ? '0 0 6px rgba(245,200,76,.8)' : 'none' });
+      return {
+        key: m.id, isTutor: T2, isStudent: m.from === 'student', isRibbon: m.kind === 'ribbon', isCorrect: m.kind === 'correct', isHint: m.kind === 'hint', isStuck: m.kind === 'stuck', isOff: m.kind === 'off',
+        text: m.text, praise: m.praise, title: m.title, tag: m.tag, dir: D.dir, lang: D.code,
+        mood: m.id === lastTutor ? (streaming ? (m.mood === 'cheer' || m.mood === 'lean' ? m.mood : 'talk') : (m.mood === 'talk' ? 'still' : m.mood)) : 'still',
+        body: T2 ? this.blocks(m.blocks, streaming || m.stopped ? m.reveal : null) : null,
+        bubble: bub, isStreaming: streaming && !rm, isStopped: !!m.stopped,
+        onResume: () => this.resume(m.id),
+        hasSrc: T2 && !!src, page: src ? src.p : '', srcAria: src ? `הצגת המקור, עמוד ${src.p}` : '',
+        onSource: () => this.setState({ source: m.step, outline: false }),
+        anim: m.seeded ? 'none' : F(m.kind === 'hint' || m.kind === 'stuck' ? 'pm-in-start .28s cubic-bezier(.23,1,.32,1) both' : 'pm-pop .24s cubic-bezier(.23,1,.32,1) both'),
+        badgeAnim: m.seeded ? 'none' : F('pm-badge .45s cubic-bezier(.34,1.4,.64,1) both'),
+        bulbAnim: m.seeded ? 'none' : A('pm-bulb .6s .1s cubic-bezier(.77,0,.175,1) 2'),
+        ribbonAnim: m.seeded ? 'none' : F('pm-ribbon .4s cubic-bezier(.34,1.4,.64,1) both'),
+        sparkles: m.seeded || m.kind !== 'correct' ? null : this.sparkles(),
+        lamps: m.kind === 'hint' ? [lamp(true), lamp(m.lamp >= 2)] : [], lampLabel: m.kind === 'hint' ? `רמז ${m.lamp} מתוך 2` : ''
+      };
+    });
+    const nodes = D.steps.map((st, i) => {
+      const done = s.done.includes(i), cur = !done && i === s.step;
+      return { num: i + 1, isDone: done, isCur: cur, showNum: !done, label: `שלב ${i + 1}: ${st.t} (${done ? 'הושלם' : cur ? 'עכשיו' : 'בהמשך'})`,
+        star: s.starPop === i ? A('pm-starpop .45s cubic-bezier(.34,1.4,.64,1) both') : 'none', pulse: A('pm-pulse 1.8s ease-out infinite'),
+        style: { position: 'relative', width: mob ? 28 : 32, height: mob ? 28 : 32, borderRadius: '50%', display: 'grid', placeItems: 'center', fontSize: 13, fontWeight: 700, transition: 'background .4s, border-color .4s, color .4s', background: done ? (s.starPop === i && s.glow ? 'var(--acc)' : 'var(--ok)') : 'var(--surf)', color: done ? (s.starPop === i && s.glow ? 'var(--acc-on)' : '#fff') : cur ? 'var(--p)' : 'var(--ink2)', border: done ? '2px solid transparent' : cur ? '2.5px solid var(--p)' : '2px solid var(--line-strong)', animation: cur ? A('pm-light .6s ease-out') : 'none' } };
+    });
+    const pct = s.done.length / (D.steps.length - 1);
+    const outlineItems = D.steps.map((st, i) => { const done = s.done.includes(i), cur = !done && i === s.step; return { title: st.t, state: done ? 'הושלם' : cur ? 'עכשיו לומדים' : 'בהמשך', icon: done ? I.check16 : String(i + 1), row: { display: 'flex', gap: 12, alignItems: 'center', padding: '10px 12px', borderRadius: 12, background: cur ? 'var(--p-soft)' : 'transparent', opacity: !done && !cur ? .85 : 1 }, dot: { flex: 'none', width: 30, height: 30, borderRadius: '50%', display: 'grid', placeItems: 'center', fontSize: 13, fontWeight: 700, background: done ? 'var(--ok)' : cur ? 'var(--p)' : 'var(--surf)', color: done || cur ? '#fff' : 'var(--ink2)', border: done || cur ? 0 : '2px solid var(--line-strong)' } }; });
+    const S = D.steps[s.step] || D.steps[0];
+    const quick = [['תשובה נכונה', S.good], ['תשובה שגויה', S.bad], ['״' + D.idkText + '״', D.idkText], ['שאלה לא קשורה', D.offQ]].map(([label, text]) => ({ label, onClick: () => this.send(text) }));
+    const srcStep = s.source != null ? this.constructor.D.he.steps[s.source] : null;
+    const src = srcStep ? { page: srcStep.src.p, how: srcStep.src.vision ? 'נקרא בעזרת ראייה' : 'נקרא כטקסט', body: this.inline(srcStep.src.x, 1e9)[0] } : null;
+    const provs = ['Gemini', 'Groq', 'OpenRouter', 'מותאם אישית'];
+    const models = { Gemini: 'gemini-2.5-flash', Groq: 'llama-3.3-70b-versatile', OpenRouter: 'openrouter/auto', 'מותאם אישית': '' };
+    const sw = (label, sub, on, fn) => ({ label, sub, on, onClick: fn, track: { flex: 'none', width: 48, height: 28, borderRadius: 999, background: on ? 'var(--p)' : 'var(--line-strong)', position: 'relative', transition: 'background .2s' }, knob: { position: 'absolute', top: 3, insetInlineStart: on ? 23 : 3, width: 22, height: 22, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,.25)', transition: 'inset-inline-start .2s' } });
+    const recap = D.recap.map((r, i) => ({ n: i + 1, node: this.inline(r, 1e9)[0], anim: F(`pm-pop .3s ${450 + i * 60}ms cubic-bezier(.23,1,.32,1) both`) }));
+    const stats = [{ v: 7, l: 'שאלות נענו' }, { v: s.totalTries, l: 'ניסיונות' }, { v: s.totalHints, l: 'רמזים שעזרו' }];
+    return {
+      wrapRef: this.wrapRef, frameRef: this.frameRef, confRef: this.confRef, chatRef: this.chatRef, fileRef: this.fileRef,
+      shell: { ...T, direction: 'rtl', fontFamily: "'Rubik', system-ui, sans-serif", color: 'var(--ink)', padding: p.chrome ? '18px 24px 40px' : 0, background: p.chrome ? '#e8e6e0' : 'transparent', minHeight: p.chrome ? '100vh' : 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, lineHeight: 1.6 },
+      chrome: p.chrome, toolbar,
+      scaleBox: { position: 'relative', flex: 'none', width: ow * sc, height: oh * sc },
+      scaleInner: { position: 'absolute', top: 0, right: 0, width: ow, height: oh, transform: `scale(${sc})`, transformOrigin: 'top right' },
+      frameStyle: { position: 'relative', width: fw, height: fh, overflow: 'hidden', background: 'var(--bg)', borderRadius: mob ? 44 : 14, border: `${bw}px solid ${mob ? '#1b1f22' : 'rgba(0,0,0,.12)'}`, boxSizing: 'content-box', boxShadow: p.chrome ? '0 30px 60px -24px rgba(0,0,0,.3), 0 8px 20px rgba(0,0,0,.06)' : '0 1px 3px rgba(0,0,0,.08)', isolation: 'isolate' },
+      I, L, rm,
+      anim: { pop: F('pm-pop .24s cubic-bezier(.23,1,.32,1) both'), slide: F('pm-in-start .28s cubic-bezier(.23,1,.32,1) both'), check: A('pm-check .35s .1s cubic-bezier(.23,1,.32,1) both'), dot1: A('pm-dot 1.1s ease-in-out infinite'), dot2: A('pm-dot 1.1s .15s ease-in-out infinite'), dot3: A('pm-dot 1.1s .3s ease-in-out infinite'), panelStart: F('pm-panel-start .4s cubic-bezier(.32,.72,0,1) both'), panelEnd: F('pm-panel-end .4s cubic-bezier(.32,.72,0,1) both'), sheet: F('pm-sheet .4s cubic-bezier(.32,.72,0,1) both'), recap: F('pm-recap .5s .25s cubic-bezier(.23,1,.32,1) both') },
+      isSetup: s.screen === 'setup', isReport: s.screen === 'report', isLesson: s.screen === 'lesson', isComplete: s.screen === 'complete',
+      openSettings: () => this.setState({ settingsOpen: true }), closeSettings: () => this.setState({ settingsOpen: false }), settingsOpen: s.settingsOpen,
+      noKey: s.apiKey.trim().length < 6,
+      dzShowZone: !f || !!s.fileErr ? !f : false, dzHasFile: !!f && !s.fileErr, dzHasErr: !!f && !!s.fileErr,
+      dzStyle, dzIcon, dzTitle: s.drag ? 'שחררו כאן, אנחנו מוכנים' : 'גררו לכאן קובץ או לחצו לבחירה',
+      pickFile: () => this.fileRef.current && this.fileRef.current.click(),
+      dzKey: e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.fileRef.current && this.fileRef.current.click(); } },
+      dzOver: e => { e.preventDefault(); if (!s.drag) this.setState({ drag: true }); },
+      dzLeave: () => this.setState({ drag: false }),
+      dzDrop: e => { e.preventDefault(); const x = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if (x) this.takeFile({ name: x.name, size: x.size, type: x.type }); else this.setState({ drag: false }); },
+      onPick: e => { const x = e.target.files && e.target.files[0]; if (x) this.takeFile({ name: x.name, size: x.size, type: x.type }); e.target.value = ''; },
+      demoOk: () => this.takeFile(this.demoFile()), demoAudio: () => this.takeFile({ name: 'הקלטה_מהשיעור.mp3', size: 8.1 * 1048576, type: 'audio/mpeg' }), demoBig: () => this.takeFile({ name: 'Pythagoras_full_deck.pptx', size: 34.6 * 1048576, type: '' }),
+      removeFile: () => this.setState({ file: null, fileErr: null }),
+      fileName: f ? f.name : 'פיתגורס_כיתה_ז.pdf', fileSize: f ? this.fmt(f.size) : '', fileErrTitle: errCopy[0], fileErrBody: errCopy[1],
+      promptId: this.uid + '-prompt', keyId: this.uid + '-key',
+      prompt: s.prompt, onPrompt: e => this.setState({ prompt: e.target.value }),
+      tryExample: () => this.setState({ prompt: 'ללמד את משפט פיתגורס לכיתה ז׳, בשיטה סוקרטית, עד 15 דקות. להשתמש בדוגמאות מהחיים, כמו סולם או מסך טלוויזיה.' }),
+      cont: () => { if (dis) return; this.setState({ continuing: true }); this.t(() => this.setState({ continuing: false, screen: 'report' }), 1300); },
+      contDisabled: !!reason, contBtn, contReason: reason, continuing: s.continuing, contLabel: s.continuing ? 'קוראים את הקובץ...' : 'המשך', contShowArrow: !s.continuing,
+      btnHover: reason ? {} : { filter: 'brightness(1.07)' }, btnActive: reason ? {} : { transform: 'scale(.97)', boxShadow: 'none' },
+      pages, promptShown: s.prompt || 'ללמד בעברית, צעד אחר צעד, עם שאלה אחת בכל שלב.',
+      backToSetup: () => { this.clearAll(); this.setState({ ...this.base(), screen: 'setup' }); },
+      build: () => { this.setState({ building: true, buildStep: 0 }); this.t(() => this.setState({ buildStep: 1 }), 800); this.t(() => this.setState({ buildStep: 2 }), 1600); this.t(() => { this.setState({ ...this.base(), screen: 'lesson', ...this.fresh() }, () => { const S0 = this.L().steps[0]; this.tutorSay('text', [...S0.b, { q: S0.q }], { mood: 'talk' }); }); }, 2500); },
+      building: s.building, buildSteps, skeletons,
+      stepLabel: `שלב ${Math.min(s.step + 1, 7)} מתוך 7`, stepTitle: S.t, ldir: D.dir, lcode: D.code, langLabel: D.label, lessonTitle: D.title,
+      toggleOutline: () => this.setState({ outline: !s.outline, source: null }), outline: s.outline,
+      doneCount: s.done.length, fillW: `calc((100% - 38px) * ${Math.min(1, pct)})`, pathBg: s.glow ? 'var(--acc-soft)' : 'transparent', glowAnim: s.glow ? A('pm-glow 1.1s ease-out') : 'none', nodes,
+      msgs, thinking: s.thinking,
+      srcDesk: !!src && !mob, srcMob: !!src && mob, src: src || { page: '', how: '', body: null }, closeSource: () => this.setState({ source: null }),
+      outlineDesk: s.outline && !mob, outlineMob: s.outline && mob, outlineItems,
+      err: s.error ? errs[s.error] : null, retrying: s.retrying, notRetrying: !s.retrying,
+      retry: () => { this.setState({ retrying: true }); this.t(() => this.setState({ retrying: false, error: null }), 900); },
+      quick, input: s.input, onInput: e => this.setState({ input: e.target.value }),
+      onInputKey: e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.send(); } },
+      askHint: () => { if (busy || s.screen !== 'lesson') return; this.setState(x => ({ msgs: [...x.msgs, { id: this.nid++, from: 'student', kind: 'text', text: D.askHint }] }), () => this.hint()); },
+      busy, notBusy: !busy, stop: this.stop, sendNow: () => this.send(),
+      sendBtn: { flex: 'none', display: 'flex', alignItems: 'center', gap: 8, height: 52, padding: mob ? '0 16px' : '0 20px', borderRadius: 'var(--r)', border: 0, background: s.input.trim() ? 'var(--p)' : 'var(--p)', opacity: s.input.trim() ? 1 : .55, color: 'var(--on-p)', fontWeight: 600, fontSize: 16, cursor: 'pointer', boxShadow: s.input.trim() ? 'var(--sh-btn)' : 'none', transition: 'transform .16s cubic-bezier(.23,1,.32,1), opacity .2s ease' },
+      recap, stats, saved: s.saved,
+      reviewChat: () => this.setState({ screen: 'lesson' }), newLesson: () => this.go('setup'),
+      providers: provs.map(pv => ({ label: pv, on: s.provider === pv, onClick: () => this.setState({ provider: pv, model: models[pv] }), style: { height: 48, borderRadius: 12, cursor: 'pointer', fontWeight: 600, fontSize: 15, border: s.provider === pv ? '2px solid var(--p)' : '1.5px solid var(--line-strong)', background: s.provider === pv ? 'var(--p-soft)' : 'var(--surf)', color: s.provider === pv ? 'var(--p-ink)' : 'var(--ink)' } })),
+      isCustom: s.provider === 'מותאם אישית', baseUrl: s.baseUrl, onBaseUrl: e => this.setState({ baseUrl: e.target.value }),
+      model: s.model, onModel: e => this.setState({ model: e.target.value }),
+      apiKey: s.apiKey, onKey: e => this.setState({ apiKey: e.target.value }), keyType: s.showKey ? 'text' : 'password', toggleKey: () => this.setState({ showKey: !s.showKey }), keyIcon: s.showKey ? I.eyeOff : I.eye, keyToggleLabel: s.showKey ? 'הסתרת המפתח' : 'הצגת המפתח', keyOk: s.apiKey.trim().length >= 6,
+      switches: [sw('המודל יודע לקרוא תמונות', 'מאפשר לקרוא שרטוטים וצילומי דפים.', s.vision, () => this.setState({ vision: !s.vision })), sw('צלילי חגיגה', 'צליל קצר ועדין בתשובה נכונה. כבוי כברירת מחדל.', s.sound, () => this.setState({ sound: !s.sound }))],
+      remember: s.remember, toggleRemember: () => this.setState({ remember: !s.remember })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+node_modules
+dist
+.vercel
+.env*
+.DS_Store
+.superpowers/
+.claude/
+AI-Engineer-Home-Assignment.pdf
+Edwin Class AI Market Research.md
+Hebrew tutoring app prototype.zip
