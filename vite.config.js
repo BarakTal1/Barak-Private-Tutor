@@ -9,6 +9,7 @@ const nodeTests = [
   'tests/api/**',
   'tests/shared/**',
   'tests/ai/client.test.js',
+  'tests/eval/**',
   'tests/lesson/{progress,reducer}.test.js',
 ]
 
