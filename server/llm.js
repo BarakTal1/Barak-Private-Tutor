@@ -1,6 +1,7 @@
 import { HttpError } from './http.js'
 
-const IMAGE_ERROR = /image|vision|multimodal|modalit/i
+// How providers say that a model takes no images. Text-only models often say "content must be a string".
+const IMAGE_ERROR = /image|vision|multimodal|modalit|must be a string/i
 
 export function mapProviderError(status, bodyText) {
   if (status === 401 || status === 403) {

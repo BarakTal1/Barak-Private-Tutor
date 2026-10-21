@@ -35,7 +35,9 @@ const call = async (overrides = {}) => {
   return res
 }
 
-beforeEach(() => streamChat.mockReset())
+beforeEach(() => {
+  streamChat.mockReset()
+})
 
 describe('POST /api/turn', () => {
   test('streams text and ends with the control line', async () => {

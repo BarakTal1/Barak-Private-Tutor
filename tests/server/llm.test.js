@@ -110,6 +110,7 @@ describe('mapProviderError', () => {
     [429, 'x', 'rate_limited'],
     [400, 'This model does not support image input', 'no_vision'],
     [404, 'No endpoints found that support image input', 'no_vision'],
+    [400, 'messages[1].content must be a string', 'no_vision'],
     [500, 'boom', 'provider_error'],
   ])('maps status %s to %s', (status, body, code) => {
     expect(mapProviderError(status, body).code).toBe(code)

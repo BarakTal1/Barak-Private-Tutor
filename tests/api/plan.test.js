@@ -25,7 +25,9 @@ const call = (body = {}) => {
   return handler(req, res).then(() => res)
 }
 
-beforeEach(() => complete.mockReset())
+beforeEach(() => {
+  complete.mockReset()
+})
 
 test('returns a validated plan', async () => {
   complete.mockResolvedValueOnce(JSON.stringify(goodPlan))
