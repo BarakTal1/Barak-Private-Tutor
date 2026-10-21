@@ -242,10 +242,10 @@ README.md  DECISIONS.md
 **Interfaces:**
 - Consumes: `scorePage` (Task 6), `ParseError` (Task 7), `MAX_VISION_PAGES`.
 - Produces:
-  - `readPdf(file: File, options?: { onProgress(done, total) }) -> Promise<{ pages: Array<PageInput & { needsVision: boolean, render: () => Promise<string> }> }>` — `render()` returns a JPEG data URL, longest side about 1400 px, quality about 0.7. Loads `pdfjs-dist` lazily. A locked PDF throws `ParseError('This PDF is password protected…')`.
+  - `readPdf(file: File, options?: { onProgress(done, total) }) -> Promise<{ pages: Array<PageInput & { needsVision: boolean, render: () => Promise<string> }> }>` — `render()` returns a JPEG data URL, longest side about 1200 px, quality about 0.6, data URL under 1.0 MB. Loads `pdfjs-dist` lazily. A locked PDF throws `ParseError('This PDF is password protected…')`.
   - `readImage(file: File) -> Promise<{ pages: [{ page: 1, label, text: '', needsVision: true, render }] }>` — converts HEIC to JPEG (lazy `heic2any`), downsizes with a canvas.
 
-- [ ] **Step 1: Write failing tests.** `pdf.test.js`: `a text pdf returns pages with needsVision false`; `an image-only pdf marks every page needsVision`; `a locked pdf throws a clear ParseError`; `a pdf with 120 pages reports more than MAX_TEXT_PAGES so the caller can cut`; `onProgress is called for each page`. `image.test.js` (canvas mocked): `a png returns one page needing vision`; `render returns a data URL under 1.5 MB for a 4000x3000 input`.
+- [ ] **Step 1: Write failing tests.** `pdf.test.js`: `a text pdf returns pages with needsVision false`; `an image-only pdf marks every page needsVision`; `a locked pdf throws a clear ParseError`; `a pdf with 120 pages reports more than MAX_TEXT_PAGES so the caller can cut`; `onProgress is called for each page`. `image.test.js` (canvas mocked): `a png returns one page needing vision`; `render returns a data URL under 1.0 MB for a 4000x3000 input`.
 - [ ] **Step 2:** Run both files. Expected: FAIL.
 - [ ] **Step 3:** Implement with `pdfjs-dist` (worker loaded through Vite `?url`). Use a canvas for `render`.
 - [ ] **Step 4:** Run both files. Expected: PASS.
@@ -261,9 +261,9 @@ README.md  DECISIONS.md
 
 **Interfaces:**
 - Consumes: Tasks 6–8, the `transcribe` client function (Task 11, passed in as a parameter to keep the layers apart).
-- Produces: `ingestFile(file: File, deps: { provider: Provider, transcribe(pages: Array<{ page: number, image: string }>) -> Promise<Array<{ page: number, text: string }>>, onProgress(info) }) -> Promise<IngestResult>`. Rules: over `MAX_FILE_BYTES` → `ParseError`; over `MAX_TEXT_PAGES` → cut and add a warning that says what was read; pages with `needsVision` go to `transcribe` in batches of 3, up to `MAX_VISION_PAGES`, the rest are `skipped` with a warning; `provider.vision === false` → those pages are `skipped`; when no page produced text, throw `ParseError('Nothing readable…')` that names the fix (turn on image reading, or use a vision model); a `no_vision` API error switches the remaining pages to `skipped`.
+- Produces: `ingestFile(file: File, deps: { provider: Provider, transcribe(pages: Array<{ page: number, image: string }>) -> Promise<Array<{ page: number, text: string }>>, onProgress(info) }) -> Promise<IngestResult>`. Rules: over `MAX_FILE_BYTES` → `ParseError`; over `MAX_TEXT_PAGES` → cut and add a warning that says what was read; pages with `needsVision` go to `transcribe` in batches of 2, up to `MAX_VISION_PAGES`, the rest are `skipped` with a warning; `provider.vision === false` → those pages are `skipped`; when no page produced text, throw `ParseError('Nothing readable…')` that names the fix (turn on image reading, or use a vision model); a `no_vision` API error switches the remaining pages to `skipped`.
 
-- [ ] **Step 1: Write failing tests** (fake parsers and fake `transcribe`): `a text file gives passages and a pages report of method text`; `poor pages are sent to transcribe in batches of 3`; `with vision off an image-only pdf throws the "Nothing readable" ParseError`; `with vision off a mixed pdf keeps good pages and warns about skipped pages`; `more than MAX_VISION_PAGES pages are skipped with a warning`; `a no_vision error from transcribe skips the rest instead of failing`; `a file over MAX_FILE_BYTES is refused before parsing`; `a very short result adds a warning`; `an unsupported kind throws its message`.
+- [ ] **Step 1: Write failing tests** (fake parsers and fake `transcribe`): `a text file gives passages and a pages report of method text`; `poor pages are sent to transcribe in batches of 2`; `with vision off an image-only pdf throws the "Nothing readable" ParseError`; `with vision off a mixed pdf keeps good pages and warns about skipped pages`; `more than MAX_VISION_PAGES pages are skipped with a warning`; `a no_vision error from transcribe skips the rest instead of failing`; `a file over MAX_FILE_BYTES is refused before parsing`; `a very short result adds a warning`; `an unsupported kind throws its message`.
 - [ ] **Step 2:** Run `npx vitest run tests/ingest/index.test.js`. Expected: FAIL.
 - [ ] **Step 3:** Implement `ingestFile` as the one entry point of the ingestion layer.
 - [ ] **Step 4:** Run the test. Expected: PASS.
@@ -281,9 +281,9 @@ README.md  DECISIONS.md
 - Consumes: Task 2 helpers.
 - Produces: `POST /api/transcribe` body `{ provider, pages: [{ page, image }] }` (image is a data URL) → `{ pages: [{ page, text }] }`. The prompt asks for the exact text, in reading order, formulas as LaTeX, tables as Markdown, the original language and direction, and no commentary. The page image is data, not instructions. A body over the limit returns `too_large`. A provider image error returns `no_vision`.
 
-- [ ] **Step 1: Write failing tests** (mock `complete`): `returns text for each page`; `answers too_large for more than 3 pages or an oversized body`; `maps an image-input provider error to no_vision`; `answers bad_request for an image that is not a data URL`.
+- [ ] **Step 1: Write failing tests** (mock `complete`): `returns text for each page`; `answers too_large for more than 2 pages or an oversized body`; `maps an image-input provider error to no_vision`; `answers bad_request for an image that is not a data URL`.
 - [ ] **Step 2:** Run the test. Expected: FAIL.
-- [ ] **Step 3:** Implement. Send one provider call per page, in parallel, with a concurrency of 3.
+- [ ] **Step 3:** Implement. Send one provider call per page, in parallel, with a concurrency of 2.
 - [ ] **Step 4:** Run the test. Expected: PASS.
 - [ ] **Step 5: Commit** `feat: add vision transcription endpoint`.
 
