@@ -10,6 +10,7 @@ export const he = {
     save: 'שמירה',
     loading: 'טוענים...',
     startOver: 'התחלה מחדש',
+    toSettings: 'להגדרות',
   },
 
   setup: {
@@ -159,15 +160,15 @@ export const he = {
     newLesson: 'שיעור חדש',
   },
 
-  // Texts for an error of the server or of the network, by code.
+  // Texts for an error of the server or of the network, by code. `action: true` offers the settings.
   apiErrors: {
-    bad_key: { title: 'מפתח ה-API לא תקין', action: 'להגדרות' },
+    bad_key: { title: 'מפתח ה-API לא תקין', action: true },
     rate_limited: { title: 'יותר מדי בקשות, נסו שוב בעוד כמה שניות' },
-    no_vision: { title: 'המודל שבחרתם לא יודע לקרוא תמונות', action: 'להגדרות' },
+    no_vision: { title: 'המודל שבחרתם לא יודע לקרוא תמונות', action: true },
     network: { title: 'אין חיבור לאינטרנט' },
     timeout: { title: 'התשובה לקחה יותר מדי זמן, נסו שוב' },
     too_large: { title: 'הבקשה גדולה מדי, נסו קובץ קטן יותר' },
-    bad_request: { title: 'משהו בבקשה לא תקין. בדקו את ההגדרות ונסו שוב', action: 'להגדרות' },
+    bad_request: { title: 'משהו בבקשה לא תקין. בדקו את ההגדרות ונסו שוב', action: true },
     provider_error: { title: 'משהו השתבש, נסו שוב' },
   },
 

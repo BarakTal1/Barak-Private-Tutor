@@ -1,4 +1,4 @@
-import { ingestFile } from '../../src/ingest/index.js'
+import { checkFile, ingestFile } from '../../src/ingest/index.js'
 import { ParseError } from '../../src/ingest/errors.js'
 import { MAX_FILE_BYTES, MAX_VISION_PAGES } from '../../shared/limits.js'
 import { readPdf } from '../../src/ingest/pdf.js'
@@ -56,6 +56,21 @@ describe('text files', () => {
   test('a very short result adds a warning', async () => {
     const result = await run(textFile('Short note about triangles.', 'short.txt'))
     expect(result.warnings).toContainEqual({ code: 'very_short', params: { chars: 27 } })
+  })
+})
+
+describe('checkFile', () => {
+  test('returns the kind of a file that can be read', () => {
+    expect(checkFile(textFile('hello', 'a.txt'))).toEqual({ tier: 'text', kind: 'txt' })
+  })
+
+  test('throws the same ParseError as ingestFile for a big file and for an unsupported file', () => {
+    expect(() => checkFile({ name: 'big.pdf', type: '', size: MAX_FILE_BYTES + 1 })).toThrow(
+      expect.objectContaining({ code: 'too_large' }),
+    )
+    expect(() => checkFile(textFile('x', 'song.mp3'))).toThrow(
+      expect.objectContaining({ code: 'unsupported', params: { reason: 'media' } }),
+    )
   })
 })
 

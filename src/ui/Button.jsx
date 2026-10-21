@@ -12,6 +12,7 @@ export default function Button({
   variant = 'primary',
   loading = false,
   disabled = false,
+  fullWidth = false,
   reason,
   type = 'button',
   className = '',
@@ -21,7 +22,7 @@ export default function Button({
   const reasonId = useId()
   const showReason = disabled && reason
   return (
-    <span className="inline-flex flex-col items-stretch gap-2">
+    <span className={`flex-col items-stretch gap-2 ${fullWidth ? 'flex w-full' : 'inline-flex'}`}>
       <button
         type={type}
         disabled={disabled || loading}

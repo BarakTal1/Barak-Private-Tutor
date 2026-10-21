@@ -1,3 +1,15 @@
+import { useSettings } from './ai/SettingsProvider.jsx'
+import { useLesson } from './lesson/LessonProvider.jsx'
+import SettingsPanel from './ui/SettingsPanel.jsx'
+import SetupScreen from './ui/SetupScreen.jsx'
+
 export default function App() {
-  return <h1>Teach Me This File</h1>
+  const { state } = useLesson()
+  const { panelOpen, closePanel } = useSettings()
+  return (
+    <>
+      {state.phase === 'setup' && <SetupScreen />}
+      {panelOpen && <SettingsPanel onClose={closePanel} />}
+    </>
+  )
 }

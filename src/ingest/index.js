@@ -75,10 +75,9 @@ async function routePages(entries, { provider, transcribe, onProgress }) {
   return { results, warnings }
 }
 
-// The one entry point of the ingestion layer: a file becomes numbered passages and a report.
-// `transcribe(pages)` asks the model to read page images. It is passed in so this layer
-// does not depend on the network code.
-export async function ingestFile(file, { provider, transcribe, onProgress = () => {} }) {
+// Checks a file by its size and its name, without reading it. Returns the kind of the file,
+// or throws the ParseError that ingestFile would throw. The UI uses it the moment a file is chosen.
+export function checkFile(file) {
   if (file.size > MAX_FILE_BYTES) {
     throw new ParseError('too_large', 'The file is too large.', { limit: MAX_FILE_BYTES })
   }
@@ -86,6 +85,14 @@ export async function ingestFile(file, { provider, transcribe, onProgress = () =
   if (detected.tier === 'message') {
     throw new ParseError('unsupported', 'This file type is not supported.', { reason: detected.reason })
   }
+  return detected
+}
+
+// The one entry point of the ingestion layer: a file becomes numbered passages and a report.
+// `transcribe(pages)` asks the model to read page images. It is passed in so this layer
+// does not depend on the network code.
+export async function ingestFile(file, { provider, transcribe, onProgress = () => {} }) {
+  const detected = checkFile(file)
 
   onProgress({ stage: 'reading', done: 0, total: 1 })
   const { pages, warnings: parserWarnings = [], totalPages } = await readPages(file, detected, onProgress)

@@ -56,3 +56,8 @@ test('the variant changes the look and the type is button by default', () => {
   expect(screen.getByRole('button').className).not.toBe(primary)
   expect(screen.getByRole('button')).toHaveAttribute('type', 'button')
 })
+
+test('fullWidth makes the button and its reason as wide as the container', () => {
+  const { container } = render(<Button fullWidth disabled reason="למה לא">א</Button>)
+  expect(container.firstChild.className).toMatch(/\bw-full\b/)
+})
