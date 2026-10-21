@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import devApi from './dev-api.js'
 
 // Code that runs on the server needs no browser, so its tests run in plain Node.
 const nodeTests = [
@@ -12,7 +13,7 @@ const nodeTests = [
 ]
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), devApi()],
   test: {
     globals: true,
     setupFiles: ['./tests/setup.js'],

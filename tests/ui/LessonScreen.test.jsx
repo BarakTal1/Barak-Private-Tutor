@@ -64,11 +64,21 @@ describe('starting the lesson', () => {
     expect(payload()).toMatchObject({ studentMessage: null, request: 'answer', step: { id: 's1' }, progress: { stepIndex: 0, attempts: 0 } })
   })
 
-  test('the begin turn runs once also in strict mode', async () => {
-    say('Welcome!')
+  test('the begin turn runs once also in strict mode, where React mounts a screen twice', async () => {
+    // Like the real stream, this one ends with null when its request is aborted.
+    streamTurn.mockImplementation(({ onText, signal }) =>
+      new Promise((resolve) => {
+        signal.addEventListener('abort', () => resolve(null))
+        setTimeout(() => {
+          onText('Welcome!')
+          resolve(partial)
+        }, 0)
+      }),
+    )
     renderLesson(<App />, { strict: true })
     await screen.findByText('Welcome!')
     expect(streamTurn).toHaveBeenCalledTimes(1)
+    expect(screen.queryByText(he.lesson.retryTurn)).not.toBeInTheDocument()
   })
 
   test('the header shows the step counter and the title of the step', async () => {
@@ -393,6 +403,14 @@ describe('leaving and coming back', () => {
     expect(lessonRef.current.state.phase).toBe('lesson')
     await userEvent.click(screen.getByRole('button', { name: he.lesson.exit }))
     await waitFor(() => expect(lessonRef.current.state.phase).toBe('setup'))
+  })
+
+  test('Exit stops the turn that is running', async () => {
+    const turn = openTurn()
+    renderLesson(<App />)
+    await screen.findByText(he.lesson.thinking)
+    await userEvent.click(screen.getByRole('button', { name: he.lesson.exit }))
+    expect(turn.signal.aborted).toBe(true)
   })
 
   test('the outline button opens the map of the lesson', async () => {

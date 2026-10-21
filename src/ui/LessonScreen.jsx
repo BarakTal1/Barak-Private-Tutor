@@ -8,7 +8,7 @@ import ChatMessage from './ChatMessage.jsx'
 import Composer from './Composer.jsx'
 import { directionOf } from './direction.js'
 import ErrorBanner from './ErrorBanner.jsx'
-import { fmt, he } from './he.js'
+import { he } from './he.js'
 import OutlineDrawer from './OutlineDrawer.jsx'
 import ProgressHeader from './ProgressHeader.jsx'
 import SourceSheet from './SourceSheet.jsx'
@@ -74,7 +74,9 @@ export default function LessonScreen() {
   }, [messages, streaming, error, height, ribbon])
 
   const exit = () => {
-    if (window.confirm(he.lesson.exitConfirm)) dispatch({ type: 'reset' })
+    if (!window.confirm(he.lesson.exitConfirm)) return
+    tutor.stop()
+    dispatch({ type: 'reset' })
   }
 
   const sourceMessage = messages.find((message) => message.id === sourceOf)
@@ -95,7 +97,13 @@ export default function LessonScreen() {
       >
         <div className="mx-auto flex max-w-2xl flex-col gap-5">
           <p className="text-center text-sm text-ink2">
-            {fmt(he.lesson.fromFile, { name: state.fileName, language: plan.language || '' }).replace(/ · $/, '')}
+            {he.lesson.from} <bdi>{state.fileName}</bdi>
+            {plan.language && (
+              <>
+                {' · '}
+                <bdi>{plan.language}</bdi>
+              </>
+            )}
           </p>
           {messages.map((message, index) => (
             <ChatMessage

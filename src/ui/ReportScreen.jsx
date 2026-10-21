@@ -8,6 +8,7 @@ import Chip from './Chip.jsx'
 import ErrorBanner from './ErrorBanner.jsx'
 import { fmt, he } from './he.js'
 import { AlertIcon, ArrowEndIcon, ArrowStartIcon, CheckIcon, EyeIcon, InfoIcon } from './icons.jsx'
+import Markdown from './Markdown.jsx'
 import { describeWarning } from './messages.js'
 import Screen from './Screen.jsx'
 import TutorCharacter from './TutorCharacter.jsx'
@@ -76,8 +77,8 @@ export default function ReportScreen() {
         <TutorCharacter mood="talk" size={64} />
         <div className="min-w-0">
           <h1 className="text-3xl font-extrabold">{he.report.title}</h1>
-          <p dir="auto" className="truncate text-ink2">
-            {fmt(he.report.summary, { name: ingest.fileName, count: ingest.pages.length })}
+          <p className="truncate text-ink2">
+            <bdi>{ingest.fileName}</bdi> · {fmt(he.report.pages, { count: ingest.pages.length })}
           </p>
         </div>
       </header>
@@ -113,9 +114,9 @@ export default function ReportScreen() {
           role="region"
           aria-label={he.report.previewTitle}
           dir="auto"
-          className="max-h-72 overflow-y-auto whitespace-pre-wrap text-base leading-relaxed"
+          className="max-h-72 overflow-y-auto text-base leading-relaxed"
         >
-          {preview}
+          <Markdown text={preview} />
         </Card>
       </section>
 

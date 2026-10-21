@@ -40,7 +40,8 @@ describe('the report', () => {
   test('shows the title and a summary with the file name and the number of pages', () => {
     renderReport()
     expect(screen.getByRole('heading', { name: he.report.title })).toBeInTheDocument()
-    expect(screen.getByText(fmt(he.report.summary, { name: 'triangles.pdf', count: 4 }))).toBeInTheDocument()
+    expect(screen.getByText('triangles.pdf').parentElement).toHaveTextContent(`triangles.pdf · ${fmt(he.report.pages, { count: 4 })}`)
+    expect(screen.getByText('triangles.pdf').tagName).toBe('BDI')
   })
 
   test('shows one chip for each page with the right method', () => {
@@ -62,6 +63,14 @@ describe('the report', () => {
   test('shows no warning block when there are no warnings', () => {
     renderReport({ ...mixed, warnings: [] })
     expect(screen.queryByRole('note')).not.toBeInTheDocument()
+  })
+
+  test('the preview shows a table and a heading as they look, not as Markdown signs', () => {
+    const rich = { ...mixed, passages: [{ ...mixed.passages[0], text: '# כותרת\n\n| א | ב |\n| --- | --- |\n| 1 | 2 |' }] }
+    renderReport(rich)
+    const preview = screen.getByRole('region', { name: he.report.previewTitle })
+    expect(within(preview).getByRole('table')).toBeInTheDocument()
+    expect(preview.textContent).not.toContain('| ---')
   })
 
   test('the preview shows the start of the text with dir auto and is cut at 1500 characters', () => {

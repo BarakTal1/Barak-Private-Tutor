@@ -64,6 +64,28 @@ describe('sendError', () => {
   })
 })
 
+describe('assertSafeBaseUrl on a developer machine', () => {
+  afterEach(() => vi.unstubAllEnvs())
+
+  test('accepts a local provider only when ALLOW_PRIVATE_PROVIDER is 1', () => {
+    expect(() => assertSafeBaseUrl('http://localhost:11434/v1')).toThrow(HttpError)
+    vi.stubEnv('ALLOW_PRIVATE_PROVIDER', '1')
+    expect(assertSafeBaseUrl('http://localhost:11434/v1').hostname).toBe('localhost')
+    expect(assertSafeBaseUrl('http://192.168.1.5:1234/v1').hostname).toBe('192.168.1.5')
+  })
+
+  test('still refuses other protocols and a password in the address', () => {
+    vi.stubEnv('ALLOW_PRIVATE_PROVIDER', '1')
+    expect(() => assertSafeBaseUrl('ftp://localhost/v1')).toThrow(HttpError)
+    expect(() => assertSafeBaseUrl('http://user:pass@localhost/v1')).toThrow(HttpError)
+  })
+
+  test('any other value of the switch changes nothing', () => {
+    vi.stubEnv('ALLOW_PRIVATE_PROVIDER', 'true')
+    expect(() => assertSafeBaseUrl('http://localhost/v1')).toThrow(HttpError)
+  })
+})
+
 describe('assertSafeBaseUrl', () => {
   test.each([
     'http://localhost:3000/v1',

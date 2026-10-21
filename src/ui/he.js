@@ -98,7 +98,7 @@ export const he = {
 
   report: {
     title: 'קראנו את הקובץ',
-    summary: '{name} · {count} עמודים',
+    pages: '{count} עמודים',
     chipText: 'נקרא כטקסט',
     chipVision: 'נקרא בעזרת ראייה',
     chipSkipped: 'דולג',
@@ -123,7 +123,7 @@ export const he = {
     outlineDone: 'הושלם',
     outlineCurrent: 'עכשיו',
     outlineNext: 'בהמשך',
-    fromFile: 'שיעור מתוך {name} · {language}',
+    from: 'שיעור מתוך',
     source: 'מקור',
     sourceFor: 'מקור · {label}',
     sourceNote: 'זה הקטע מהקובץ שעליו מבוסס ההסבר. הוא מוצג בשפה ובכיוון המקוריים שלו.',

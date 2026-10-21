@@ -21,6 +21,7 @@ function badRequest(message) {
 }
 
 // A custom base URL makes the server fetch it, so it must not reach private networks.
+// Only on a developer machine (the dev server sets ALLOW_PRIVATE_PROVIDER=1) a local model server is allowed.
 export function assertSafeBaseUrl(baseUrl) {
   let url
   try {
@@ -29,6 +30,9 @@ export function assertSafeBaseUrl(baseUrl) {
     throw badRequest('The provider address is not a valid URL.')
   }
   const host = url.hostname
+  if (process.env.ALLOW_PRIVATE_PROVIDER === '1' && /^https?:$/.test(url.protocol) && !url.username && !url.password) {
+    return url
+  }
   const isIpv6 = host.startsWith('[')
   const isPrivate =
     host === 'localhost' ||

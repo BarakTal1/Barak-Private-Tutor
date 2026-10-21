@@ -8,6 +8,8 @@ import { currentStep, turnInput } from '../lesson/selectors.js'
 // Runs the turns of the tutor: it sends one request, streams the answer into the lesson state
 // and tells the state how the turn ended. The attempt of a student is counted when the student
 // sends it (in the reducer), so Retry and Continue ask again without counting a second attempt.
+// A turn is not stopped when the screen unmounts: React strict mode mounts a screen twice in
+// development, and that would stop the first turn. The screen calls stop() when it really leaves.
 export function useTutor() {
   const { state, dispatch } = useLesson()
   const { settings } = useSettings()
@@ -16,7 +18,6 @@ export function useTutor() {
   useEffect(() => {
     latest.current = { state, settings }
   })
-  useEffect(() => () => request.current?.abort(), [])
 
   // `snapshot` is the lesson state that the request is built from.
   const turn = useCallback(
