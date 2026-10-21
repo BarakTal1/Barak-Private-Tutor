@@ -11,6 +11,7 @@ import ErrorBanner from './ErrorBanner.jsx'
 import { fmt, he } from './he.js'
 import { ArrowStartIcon, CloseIcon, FileIcon, InfoIcon, SlidersIcon, UploadIcon } from './icons.jsx'
 import { describeError } from './messages.js'
+import Screen from './Screen.jsx'
 import Spinner from './Spinner.jsx'
 import TutorCharacter from './TutorCharacter.jsx'
 
@@ -92,7 +93,7 @@ export default function SetupScreen() {
           : null
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-10">
+    <Screen>
       <header className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <TutorCharacter mood="encourage" size={64} />
@@ -214,6 +215,6 @@ export default function SetupScreen() {
         {he.setup.next}
         <ArrowStartIcon />
       </Button>
-    </main>
+    </Screen>
   )
 }
