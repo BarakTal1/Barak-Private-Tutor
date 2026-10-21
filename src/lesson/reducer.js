@@ -105,7 +105,12 @@ export function reducer(state, action) {
         stats: { attempts: 0, hints: 0 },
         error: null,
       }
-    case 'studentSent':
+    case 'studentSent': {
+      const last = lastOf(state)
+      // A new answer written after a turn that failed replaces the unanswered one, and is not a second attempt.
+      if (last?.role === 'student' && last.kind !== 'hint') {
+        return { ...state, error: null, messages: [...state.messages.slice(0, -1), { ...last, text: action.text }] }
+      }
       return addMessage(
         {
           ...state,
@@ -115,6 +120,7 @@ export function reducer(state, action) {
         },
         { role: 'student', text: action.text, stepId: currentStep(state).id },
       )
+    }
     case 'hintRequested': {
       const level = state.progress.steps[state.progress.currentStepIndex].hintLevel
       if (state.streaming || level >= MAX_HINT_LEVEL) return state

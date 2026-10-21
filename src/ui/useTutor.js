@@ -54,6 +54,8 @@ export function useTutor() {
     begin: useCallback(() => turn(latest.current.state, null, 'answer'), [turn]),
     send: useCallback(
       (text) => {
+        // One turn at a time: a second stream would write into the first one and replace its Stop.
+        if (latest.current.state.streaming) return undefined
         const action = { type: 'studentSent', text }
         const after = reducer(latest.current.state, action)
         dispatch(action)

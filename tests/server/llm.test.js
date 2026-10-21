@@ -51,6 +51,19 @@ describe('streamChat', () => {
     expect(JSON.parse(init.body)).toMatchObject({ model: 'model-x', stream: true, messages })
   })
 
+  test('an error event inside a stream throws instead of being skipped', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => sseResponse(['data: {"error":{"code":429,"message":"quota"}}\n\n'])),
+    )
+    await expect(collect(streamChat({ key: 'k', provider, messages }))).rejects.toMatchObject({ code: 'rate_limited' })
+  })
+
+  test('an error event with another code is a provider_error', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => sseResponse(['data: {"error":{"message":"overloaded"}}\n\n'])))
+    await expect(collect(streamChat({ key: 'k', provider, messages }))).rejects.toMatchObject({ code: 'provider_error' })
+  })
+
   test('throws a mapped error when the provider answers 401', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response('{"error":"bad"}', { status: 401 })))
     await expect(collect(streamChat({ key: 'k', provider, messages }))).rejects.toMatchObject({
@@ -111,6 +124,9 @@ describe('mapProviderError', () => {
     [400, 'This model does not support image input', 'no_vision'],
     [404, 'No endpoints found that support image input', 'no_vision'],
     [400, 'messages[1].content must be a string', 'no_vision'],
+    [400, 'API key not valid. Please pass a valid API key.', 'bad_key'],
+    [400, '{"error":{"status":"INVALID_ARGUMENT","details":[{"reason":"API_KEY_INVALID"}]}}', 'bad_key'],
+    [413, 'Request too large for model', 'too_large'],
     [500, 'boom', 'provider_error'],
   ])('maps status %s to %s', (status, body, code) => {
     expect(mapProviderError(status, body).code).toBe(code)

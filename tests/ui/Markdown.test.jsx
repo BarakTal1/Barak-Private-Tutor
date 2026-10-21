@@ -20,6 +20,14 @@ test('renders a $$ block formula', () => {
   expect(container.querySelector('.katex-display')).toBeInTheDocument()
 })
 
+test('renders math written with \\( \\) and \\[ \\] as other models write it', () => {
+  const inline = render(<Markdown text={'הנוסחה \\(x^2\\) כאן'} />)
+  expect(inline.container.querySelector('.katex')).toBeInTheDocument()
+  expect(inline.container.textContent).not.toContain('\\(')
+  const block = render(<Markdown text={'\\[a^2 + b^2 = c^2\\]'} />)
+  expect(block.container.querySelector('.katex-display')).toBeInTheDocument()
+})
+
 test('a formula that is not valid does not break the page', () => {
   const { container } = render(<Markdown text="Bad $\frac{1}{$ formula" />)
   expect(container.textContent).toContain('formula')

@@ -14,7 +14,7 @@ export default function Composer({ disabled = false, streaming, hintLevel, maxHi
   const id = useId()
   const trimmed = text.trim()
   const over = text.length - MAX_STUDENT_CHARS
-  const canSend = !disabled && trimmed !== '' && over <= 0
+  const canSend = !disabled && !streaming && trimmed !== '' && over <= 0
   const hintsLeft = hintLevel < maxHints
 
   function submit() {

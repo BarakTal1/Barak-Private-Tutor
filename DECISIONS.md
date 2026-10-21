@@ -53,6 +53,13 @@ This file says what I chose, what I did not do, what is weak, and how I know it 
 - **Panels have no focus trap.** The focus moves into a panel and comes back, but Tab can leave a panel.
 - **Prompt injection defense is light.** The file and the student message are marked as data in the prompt. There is no filter and no second model that checks the text.
 - **The address check does not resolve DNS.** A name that points to a private address would pass.
+- **Smaller points that I left open** (found in the final review):
+  - The provider call follows redirects, so a public address could send the server to a private one.
+  - The lesson is saved to storage on every streamed token. It is only extra work, not a wrong result.
+  - A rate limit (429) in the middle of reading scanned pages loses the pages that were read before. The teacher starts again.
+  - A file or a student message that contains the text `FILE>>>` or `STUDENT>>>` can close the data block in the prompt.
+  - The screen reader hears each streamed token. The first JavaScript file is large (about 830 KB) because KaTeX and the file readers load at the start.
+  - When the last step is answered right, the lesson goes to the complete screen at once. The student reads the closing reply of the tutor in the chat view.
 - **I checked the design only at 375 px and at about 1100 px,** in the browser pane of my tools. I did not test on Safari or on a real phone. A native Hebrew speaker has not reviewed the text.
 
 ## 4. What I would do with 4 more hours

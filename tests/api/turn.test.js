@@ -80,6 +80,13 @@ describe('POST /api/turn', () => {
     expect(res.ended).toBe(true)
   })
 
+  test('answers provider_error as JSON when the model sends no text at all', async () => {
+    streamChat.mockReturnValue(chunks())
+    const res = await call()
+    expect(res.statusCode).toBe(502)
+    expect(res.payload.error.code).toBe('provider_error')
+  })
+
   test('begins a step when studentMessage is null', async () => {
     streamChat.mockReturnValue(chunks('Let us begin.\n<<STATE {"verdict":"partial","advance":false}>>'))
     const res = await call({ studentMessage: null })

@@ -62,6 +62,13 @@ test('Send changes to Stop while streaming and Stop calls onStop', async () => {
   expect(onStop).toHaveBeenCalledTimes(1)
 })
 
+test('Enter while the tutor answers does not send and keeps the text', async () => {
+  const { onSend } = setup({ streaming: true })
+  await userEvent.type(box(), 'early answer{Enter}')
+  expect(onSend).not.toHaveBeenCalled()
+  expect(box()).toHaveValue('early answer')
+})
+
 test('the box stays usable while the tutor answers', async () => {
   setup({ streaming: true })
   await userEvent.type(box(), 'x')

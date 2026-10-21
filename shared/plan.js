@@ -22,7 +22,8 @@ export function validatePlan(raw, knownIds) {
       if (!value) errors.push(`Step ${index + 1} has no ${name}.`)
     }
     return {
-      id: clean(step?.id) || `s${index + 1}`,
+      // The ids of the model can repeat each other, so they are not used.
+      id: `s${index + 1}`,
       title,
       goal,
       passageIds: (Array.isArray(step?.passageIds) ? step.passageIds : []).filter((id) => knownIds.has(id)),

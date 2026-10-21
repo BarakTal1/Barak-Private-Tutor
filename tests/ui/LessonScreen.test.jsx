@@ -139,6 +139,19 @@ describe('answering', () => {
     expect(box()).toBeEnabled()
   })
 
+  test('pressing Enter while the tutor writes does not start a second turn', async () => {
+    say('Hello')
+    renderLesson(<App />)
+    await screen.findByText('Hello')
+    const turn = openTurn()
+    await reply('three')
+    await userEvent.type(box(), 'too early{Enter}')
+    expect(streamTurn).toHaveBeenCalledTimes(2)
+    expect(screen.queryByText('too early', { selector: 'p' })).not.toBeInTheDocument()
+    expect(lessonRef.current.state.progress.steps[0].attempts).toBe(1)
+    act(() => turn.finish(wrong))
+  })
+
   test('Stop keeps the partial text and gives the input back, and Continue asks again', async () => {
     say('Hello')
     renderLesson(<App />)

@@ -34,6 +34,12 @@ const components = {
   img: () => null,
 }
 
+// Some models write math as \( ... \) and \[ ... \]. The Markdown plugin reads only $ ... $ and $$ ... $$.
+const withDollarMath = (text) =>
+  text
+    .replace(/\\\[([\s\S]+?)\\\]/g, (_, math) => `\n\n$$\n${math}\n$$\n\n`)
+    .replace(/\\\(([\s\S]+?)\\\)/g, (_, math) => `$${math}$`)
+
 const REMARK = [remarkGfm, remarkMath]
 const REHYPE = [[rehypeKatex, { throwOnError: false }]]
 
@@ -41,7 +47,7 @@ export default function Markdown({ text }) {
   if (!text) return null
   return (
     <ReactMarkdown remarkPlugins={REMARK} rehypePlugins={REHYPE} components={components} skipHtml>
-      {text}
+      {withDollarMath(text)}
     </ReactMarkdown>
   )
 }

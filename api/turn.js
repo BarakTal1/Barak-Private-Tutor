@@ -43,6 +43,7 @@ export default async function handler(req, res) {
     const stream = streamChat({ key, provider: call.provider, messages, signal: controller.signal })[Symbol.asyncIterator]()
     // Read the first piece before the headers go out, so a provider error can still be sent as JSON.
     let piece = await stream.next()
+    if (piece.done) throw new HttpError(502, 'provider_error', 'The model returned no text.')
     res.status(200)
     res.setHeader('Content-Type', 'text/plain; charset=utf-8')
     res.setHeader('Cache-Control', 'no-cache, no-transform')

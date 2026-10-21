@@ -57,6 +57,14 @@ describe('validatePlan', () => {
     expect(validatePlan(null, known).plan).toBeNull()
   })
 
+  test('ignores the ids of the model, which can repeat each other', () => {
+    const { plan } = validatePlan(
+      rawPlan([rawStep({ id: 's1' }), rawStep({ id: 's1' }), rawStep({ id: 'x' })]),
+      known,
+    )
+    expect(plan.steps.map((step) => step.id)).toEqual(['s1', 's2', 's3'])
+  })
+
   test('gives missing step ids and keyPoints a default', () => {
     const { plan } = validatePlan(rawPlan([rawStep({ id: undefined, keyPoints: undefined })]), known)
     expect(plan.steps[0].id).toBe('s1')

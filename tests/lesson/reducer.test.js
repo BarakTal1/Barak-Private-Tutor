@@ -160,6 +160,31 @@ describe('answers, moods and praise', () => {
   })
 })
 
+describe('a new answer after a turn that failed', () => {
+  test('replaces the unanswered answer and counts one attempt', () => {
+    let state = answer(lessonState(), 'first try')
+    state = run(state, { type: 'tutorStarted', stepId: 's1' }, { type: 'failed', error: { code: 'network', message: 'x' } })
+    state = answer(state, 'second try')
+    expect(state.messages.filter((m) => m.role === 'student').map((m) => m.text)).toEqual(['second try'])
+    expect(state.progress.steps[0].attempts).toBe(1)
+    expect(state.stats.attempts).toBe(1)
+    expect(state.error).toBeNull()
+  })
+
+  test('does not replace an answer that the tutor has answered', () => {
+    let state = tutorTurn(answer(lessonState(), 'first'), 'No', wrong)
+    state = answer(state, 'second')
+    expect(state.messages.filter((m) => m.role === 'student')).toHaveLength(2)
+    expect(state.progress.steps[0].attempts).toBe(2)
+  })
+
+  test('does not replace a hint request', () => {
+    let state = run(lessonState(), { type: 'hintRequested' })
+    state = answer(state, 'my guess')
+    expect(state.messages.map((m) => m.kind ?? m.role)).toEqual(['hint', 'student'])
+  })
+})
+
 describe('hints', () => {
   const hint = { type: 'hintRequested' }
 

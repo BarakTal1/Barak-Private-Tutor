@@ -1,5 +1,6 @@
 import { HttpError } from './http.js'
 
+const API_KEY_ERROR = /api[ _-]?key/i
 // How providers say that a model takes no images. Text-only models often say "content must be a string".
 const IMAGE_ERROR = /image|vision|multimodal|modalit|must be a string/i
 
@@ -10,6 +11,11 @@ export function mapProviderError(status, bodyText) {
   if (status === 429) {
     return new HttpError(429, 'rate_limited', 'The provider says there are too many requests.')
   }
+  // Gemini answers a wrong key with 400, not 401.
+  if (status === 400 && API_KEY_ERROR.test(bodyText)) {
+    return new HttpError(401, 'bad_key', 'The provider rejected the API key.')
+  }
+  if (status === 413) return new HttpError(413, 'too_large', 'The request is too large for this model.')
   if ([400, 404, 415, 422].includes(status) && IMAGE_ERROR.test(bodyText)) {
     return new HttpError(422, 'no_vision', 'This model cannot read images.')
   }
@@ -65,9 +71,13 @@ function readDelta(line) {
   if (!line.startsWith('data:')) return ''
   const payload = line.slice(5).trim()
   if (!payload || payload === '[DONE]') return ''
+  let event
   try {
-    return JSON.parse(payload).choices?.[0]?.delta?.content ?? ''
+    event = JSON.parse(payload)
   } catch {
     return ''
   }
+  // Some providers answer 200 and then send an error inside the stream.
+  if (event.error) throw mapProviderError(Number(event.error.code) || 502, JSON.stringify(event.error))
+  return event.choices?.[0]?.delta?.content ?? ''
 }

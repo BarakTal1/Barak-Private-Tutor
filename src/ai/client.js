@@ -84,6 +84,7 @@ export async function streamTurn({ settings, payload, signal, onText }) {
     show(filter.push(decoder.decode()))
     const { visible, control } = filter.finish()
     show(visible.slice(shown.length))
+    if (!visible.trim()) throw new ApiClientError('provider_error', 'The model returned no text.')
     return control
   } catch (err) {
     if (err.name === 'AbortError') return null

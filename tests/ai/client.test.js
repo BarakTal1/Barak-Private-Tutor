@@ -141,6 +141,21 @@ describe('streamTurn', () => {
     expect(control).toBeNull()
   })
 
+  test('an answer with no visible text is an error, not an empty bubble', async () => {
+    stubFetch(async () => streamResponse(['<<STATE {"verdict":"partial","advance":false}>>']))
+    await expect(streamTurn({ settings, payload: {}, onText: () => {} })).rejects.toMatchObject({ code: 'provider_error' })
+    stubFetch(async () => streamResponse(['   ']))
+    await expect(streamTurn({ settings, payload: {}, onText: () => {} })).rejects.toMatchObject({ code: 'provider_error' })
+  })
+
+  test('a stopped stream with no text is not an error', async () => {
+    const controller = new AbortController()
+    stubFetch(async (url, init) => streamResponse([], { signal: init.signal }))
+    const done = streamTurn({ settings, payload: {}, signal: controller.signal, onText: () => {} })
+    controller.abort()
+    await expect(done).resolves.toBeNull()
+  })
+
   test('returns null when the stream has no control line', async () => {
     stubFetch(async () => streamResponse(['Just text.']))
     await expect(streamTurn({ settings, payload: {}, onText: () => {} })).resolves.toBeNull()
