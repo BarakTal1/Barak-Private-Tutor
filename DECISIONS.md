@@ -16,7 +16,7 @@ This file says what I chose, what I did not do, what is weak, and how I know it 
 
 **Hebrew first.** The whole interface is Hebrew and right to left, with logical CSS only (a test enforces it). Each message block uses `dir="auto"`, so a French lesson in a Hebrew interface reads correctly. The design is the "Bright Adventure" direction from the Claude Design prototype, with a plain chat background. The tutor "Barak", the praise badge, the star path and the confetti are there to make the lesson fun. Every animation has a reduced-motion version.
 
-**Tests first.** I wrote each test and watched it fail before the code. 540 tests cover the server, the lesson state, the file readers, the AI client and every screen. I also ran the whole app in a browser against a fake model server (`scripts/fake-provider.mjs`). That run found a real bug that unit tests had missed (React strict mode stopped the first turn).
+**Tests first.** I wrote each test and watched it fail before the code. More than 550 tests cover the server, the lesson state, the file readers, the AI client and every screen. I also ran the whole app in a browser against a fake model server (`scripts/fake-provider.mjs`). That run found a real bug that unit tests had missed (React strict mode stopped the first turn).
 
 ### Libraries and why
 
@@ -92,7 +92,7 @@ EVAL_KEY=<your key> npm run eval     # in another terminal; the key is never pri
 
 ### Automated tests
 
-`npm test` runs 540 tests. They include:
+`npm test` runs more than 550 tests. They include:
 
 - the tutor prompts (rules, hint levels, the forced explanation, data markers) and the plan check (unknown IDs, repair, retry);
 - the control line, including a line cut in the middle and text sent one character at a time;
