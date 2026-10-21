@@ -1,5 +1,6 @@
 import { useSettings } from './ai/SettingsProvider.jsx'
 import { useLesson } from './lesson/LessonProvider.jsx'
+import LessonScreen from './ui/LessonScreen.jsx'
 import ReportScreen from './ui/ReportScreen.jsx'
 import SettingsPanel from './ui/SettingsPanel.jsx'
 import SetupScreen from './ui/SetupScreen.jsx'
@@ -11,6 +12,7 @@ export default function App() {
     <>
       {state.phase === 'setup' && <SetupScreen />}
       {state.phase === 'report' && <ReportScreen />}
+      {state.phase === 'lesson' && <LessonScreen />}
       {panelOpen && <SettingsPanel onClose={closePanel} />}
     </>
   )

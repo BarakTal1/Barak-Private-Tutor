@@ -116,6 +116,8 @@ export const he = {
   lesson: {
     stepCounter: 'שלב {current} מתוך {total}',
     exit: 'יציאה',
+    exitConfirm: 'לצאת מהשיעור? ההתקדמות לא תישמר.',
+    pathLabel: 'ההתקדמות בשיעור',
     outline: 'מפת השיעור',
     openOutline: 'פתיחת מפת השיעור',
     outlineDone: 'הושלם',

@@ -68,6 +68,24 @@ describe('tutor turns', () => {
     expect(state.progress).toEqual(before.progress)
   })
 
+  test('tutorStopped marks the partial message as stopped', () => {
+    const state = run(lessonState(), { type: 'tutorStarted', stepId: 's1' }, { type: 'tutorDelta', text: 'Part' }, { type: 'tutorStopped' })
+    expect(lastMessage(state).stopped).toBe(true)
+  })
+
+  test('stoppedDiscarded removes the stopped tutor message and nothing else', () => {
+    const before = answer(lessonState())
+    const stopped = run(before, { type: 'tutorStarted', stepId: 's1' }, { type: 'tutorDelta', text: 'Part' }, { type: 'tutorStopped' })
+    const state = run(stopped, { type: 'stoppedDiscarded' })
+    expect(state.messages).toEqual(before.messages)
+    expect(state.progress).toEqual(before.progress)
+  })
+
+  test('stoppedDiscarded does nothing when the last message was not stopped', () => {
+    const state = tutorTurn(answer(lessonState()), 'Hello', null)
+    expect(reducer(state, { type: 'stoppedDiscarded' })).toBe(state)
+  })
+
   test('tutorStopped removes an empty tutor message', () => {
     const state = run(lessonState(), { type: 'tutorStarted', stepId: 's1' }, { type: 'tutorStopped' })
     expect(state.messages).toEqual([])

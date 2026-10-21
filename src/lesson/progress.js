@@ -1,6 +1,6 @@
 import { MAX_ATTEMPTS } from '../../shared/limits.js'
 
-const MAX_HINT_LEVEL = 2
+export const MAX_HINT_LEVEL = 2
 
 const freshStep = (status) => ({ status, attempts: 0, hintLevel: 0 })
 

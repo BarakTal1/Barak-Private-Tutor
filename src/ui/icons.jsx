@@ -1,5 +1,5 @@
 // Small line icons. They are decorative: the text next to them carries the meaning.
-function Icon({ children, size = 20, className = '' }) {
+function Icon({ children, size = 20, className = '', ...rest }) {
   return (
     <svg
       aria-hidden="true"
@@ -12,6 +12,7 @@ function Icon({ children, size = 20, className = '' }) {
       strokeLinecap="round"
       strokeLinejoin="round"
       className={`shrink-0 ${className}`}
+      {...rest}
     >
       {children}
     </svg>
@@ -91,5 +92,39 @@ export const AlertIcon = (props) => (
 export const RefreshIcon = (props) => (
   <Icon {...props}>
     <path d="M20 11a8 8 0 0 0-14.5-4M4 4v4h4M4 13a8 8 0 0 0 14.5 4M20 20v-4h-4" />
+  </Icon>
+)
+
+export const StarIcon = ({ filled = false, ...props }) => (
+  <Icon {...props}>
+    <path
+      d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"
+      fill={filled ? 'currentColor' : 'none'}
+    />
+  </Icon>
+)
+export const BulbIcon = ({ filled = false, ...props }) => (
+  <Icon {...props}>
+    <path d="M9 18h6m-5 3h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z" fill={filled ? 'currentColor' : 'none'} />
+  </Icon>
+)
+export const SendIcon = (props) => (
+  <Icon {...props}>
+    <path d="M21 3 10 14M21 3l-7 18-4-7-7-4z" className="origin-center rtl:-scale-x-100" />
+  </Icon>
+)
+export const StopIcon = (props) => (
+  <Icon {...props}>
+    <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" />
+  </Icon>
+)
+export const ListIcon = (props) => (
+  <Icon {...props}>
+    <path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01" />
+  </Icon>
+)
+export const BookIcon = (props) => (
+  <Icon {...props}>
+    <path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 21V5" />
   </Icon>
 )

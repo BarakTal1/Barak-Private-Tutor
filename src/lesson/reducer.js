@@ -1,4 +1,5 @@
 import {
+  MAX_HINT_LEVEL,
   applyControl,
   createProgress,
   isComplete,
@@ -9,7 +10,6 @@ import {
 } from './progress.js'
 
 const MAX_PARKED_QUESTIONS = 3
-const MAX_HINT_LEVEL = 2
 
 export const initialState = () => ({
   phase: 'setup',
@@ -139,8 +139,13 @@ export function reducer(state, action) {
       return isOpenTutor(lastOf(state)) ? replaceLast(state, { text: lastOf(state).text + action.text }) : state
     case 'tutorFinished':
       return isOpenTutor(lastOf(state)) ? finishTutor(state, action.control) : { ...state, streaming: false }
-    case 'tutorStopped':
-      return dropEmptyTutor({ ...state, streaming: false })
+    case 'tutorStopped': {
+      const stopped = { ...state, streaming: false }
+      const last = lastOf(stopped)
+      return state.streaming && isOpenTutor(last) && last.text ? replaceLast(stopped, { stopped: true }) : dropEmptyTutor(stopped)
+    }
+    case 'stoppedDiscarded':
+      return lastOf(state)?.stopped ? { ...state, messages: state.messages.slice(0, -1) } : state
     case 'failed':
       return dropEmptyTutor({ ...state, streaming: false, error: action.error })
     case 'clearError':
