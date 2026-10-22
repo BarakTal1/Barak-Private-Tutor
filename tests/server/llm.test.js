@@ -126,6 +126,7 @@ describe('mapProviderError', () => {
     [400, 'messages[1].content must be a string', 'no_vision'],
     [400, 'API key not valid. Please pass a valid API key.', 'bad_key'],
     [400, '{"error":{"status":"INVALID_ARGUMENT","details":[{"reason":"API_KEY_INVALID"}]}}', 'bad_key'],
+    [400, '[{"error":{"code":400,"message":"Invalid Auth key.","status":"INVALID_ARGUMENT"}}]', 'bad_key'],
     [413, 'Request too large for model', 'too_large'],
     [500, 'boom', 'provider_error'],
   ])('maps status %s to %s', (status, body, code) => {

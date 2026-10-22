@@ -1,6 +1,6 @@
 import { HttpError } from './http.js'
 
-const API_KEY_ERROR = /api[ _-]?key/i
+const API_KEY_ERROR = /api[ _-]?key|auth key/i
 // How providers say that a model takes no images. Text-only models often say "content must be a string".
 const IMAGE_ERROR = /image|vision|multimodal|modalit|must be a string/i
 
@@ -11,7 +11,7 @@ export function mapProviderError(status, bodyText) {
   if (status === 429) {
     return new HttpError(429, 'rate_limited', 'The provider says there are too many requests.')
   }
-  // Gemini answers a wrong key with 400, not 401.
+  // Gemini answers a wrong key with 400, not 401 ("API key not valid", or "Invalid Auth key" for keys that start with AQ).
   if (status === 400 && API_KEY_ERROR.test(bodyText)) {
     return new HttpError(401, 'bad_key', 'The provider rejected the API key.')
   }
