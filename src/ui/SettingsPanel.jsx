@@ -82,7 +82,14 @@ export default function SettingsPanel({ onClose }) {
       </Field>
       <Field label={he.settings.model}>
         {(id) => (
-          <input id={id} dir="ltr" value={settings.provider.model} onChange={(e) => setProvider({ model: e.target.value })} className={FIELD} autoComplete="off" spellCheck={false} />
+          <>
+            <input id={id} dir="ltr" list={`${id}-models`} value={settings.provider.model} onChange={(e) => setProvider({ model: e.target.value })} className={FIELD} autoComplete="off" spellCheck={false} />
+            <datalist id={`${id}-models`}>
+              {(activePreset?.models ?? []).map((name) => (
+                <option key={name} value={name} />
+              ))}
+            </datalist>
+          </>
         )}
       </Field>
       {activePreset?.keyUrl && (

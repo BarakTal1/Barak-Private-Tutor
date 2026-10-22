@@ -1,11 +1,11 @@
 // Starting values only. The user can change the address, the model and the vision switch,
-// because free model names and limits change often.
+// because free model names and limits change often. `models` are suggestions for the model field.
 export const PROVIDER_PRESETS = [
-  { id: 'anthropic', name: 'Anthropic', baseUrl: 'https://api.anthropic.com/v1', model: 'claude-sonnet-5-5', vision: true, keyUrl: 'https://console.anthropic.com/settings/keys' },
-  { id: 'openai', name: 'OpenAI', baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o-mini', vision: true, keyUrl: 'https://platform.openai.com/api-keys' },
-  { id: 'gemini', name: 'Google Gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai', model: 'gemini-3.8-flash', vision: true, keyUrl: 'https://aistudio.google.com/apikey' },
-  { id: 'groq', name: 'Groq', baseUrl: 'https://api.groq.com/openai/v1', model: 'llama-3.3-70b-versatile', vision: false, keyUrl: 'https://console.groq.com/keys' },
-  { id: 'openrouter', name: 'OpenRouter', baseUrl: 'https://openrouter.ai/api/v1', model: 'meta-llama/llama-3.3-70b-instruct:free', vision: false, keyUrl: 'https://openrouter.ai/settings/keys' },
+  { id: 'anthropic', name: 'Anthropic', baseUrl: 'https://api.anthropic.com/v1', model: 'claude-sonnet-5-5', models: ['claude-sonnet-5-5', 'claude-opus-5-5', 'claude-haiku-5-5', 'claude-fable-5-1'], vision: true, keyUrl: 'https://console.anthropic.com/settings/keys' },
+  { id: 'openai', name: 'OpenAI', baseUrl: 'https://api.openai.com/v1', model: 'gpt-5.6-luna', models: ['gpt-5.6-luna', 'gpt-5.6-terra', 'gpt-5.6-sol', 'gpt-5.4-mini', 'gpt-5.4-nano'], vision: true, keyUrl: 'https://platform.openai.com/api-keys' },
+  { id: 'gemini', name: 'Google Gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai', model: 'gemini-3.8-flash', models: ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-3.1-pro-preview'], vision: true, keyUrl: 'https://aistudio.google.com/apikey' },
+  { id: 'groq', name: 'Groq', baseUrl: 'https://api.groq.com/openai/v1', model: 'llama-3.3-70b-versatile', models: ['llama-3.3-70b-versatile'], vision: false, keyUrl: 'https://console.groq.com/keys' },
+  { id: 'openrouter', name: 'OpenRouter', baseUrl: 'https://openrouter.ai/api/v1', model: 'meta-llama/llama-3.3-70b-instruct:free', models: ['meta-llama/llama-3.3-70b-instruct:free'], vision: false, keyUrl: 'https://openrouter.ai/settings/keys' },
   { id: 'custom', name: 'Custom', baseUrl: '', model: '', vision: false },
 ]
 

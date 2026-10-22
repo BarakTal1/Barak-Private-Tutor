@@ -98,3 +98,7 @@ test('a saved retired Gemini model moves to the new name', () => {
   localStorage.setItem('tmtf.settings.v1', JSON.stringify({ providerId: 'gemini', provider: { baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai', model: 'gemini-2.5-flash', vision: true }, rememberKey: false }))
   expect(loadSettings().provider.model).toBe('gemini-3.8-flash')
 })
+
+test('each provider with a list suggests its default model first', () => {
+  for (const preset of PROVIDER_PRESETS.filter((p) => p.models)) expect(preset.models[0]).toBe(preset.model)
+})
