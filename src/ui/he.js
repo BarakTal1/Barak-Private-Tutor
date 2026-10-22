@@ -25,8 +25,8 @@ export const he = {
     removeFile: 'הסרת הקובץ',
     anotherFile: 'קובץ אחר',
     promptLabel: 'ההנחיה למורה ה-AI',
-    promptPlaceholder: 'למשל: ללמד כיתה ז׳, בצרפתית, בשיטה סוקרטית, עד 15 דקות',
-    promptExample: 'ללמד כיתה ז׳, בצרפתית, בשיטה סוקרטית, עד 15 דקות.',
+    promptPlaceholder: 'למשל: ללמד כיתה ז׳, בעברית, בשיטה סוקרטית, עד 15 דקות',
+    promptExample: 'ללמד כיתה ז׳, בעברית, בשיטה סוקרטית, עד 15 דקות.',
     tryExample: 'נסו דוגמה',
     settings: 'הגדרות',
     next: 'המשך',
@@ -54,6 +54,7 @@ export const he = {
     vision: 'המודל יודע לקרוא תמונות',
     visionHint: 'נדרש לצילומים ולדפים סרוקים',
     remember: 'זכרו את המפתח במכשיר הזה',
+    getKey: 'יצירת מפתח API אצל {provider}',
     privacy: 'המפתח שלכם נשלח רק לספק ה-AI שבחרתם, ולא נשמר אצלנו.',
   },
 

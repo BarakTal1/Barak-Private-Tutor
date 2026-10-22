@@ -137,7 +137,7 @@ export default function SetupScreen() {
             choose(event.dataTransfer.files[0])
           }}
         >
-          <input ref={input} type="file" className="sr-only" onChange={(event) => choose(event.target.files[0])} disabled={busy} />
+          <input ref={input} id="file-input" type="file" className="peer sr-only" onChange={(event) => choose(event.target.files[0])} disabled={busy} />
           {file ? (
             <Card className="flex flex-col gap-3">
               <div className="flex items-center gap-3">
@@ -166,7 +166,8 @@ export default function SetupScreen() {
             </Card>
           ) : (
             <label
-              className={`flex cursor-pointer flex-col items-center gap-3 rounded-card border-2 border-dashed px-4 py-10 text-center transition-colors duration-160 ${dragging ? 'border-p bg-p-soft' : 'border-line-strong bg-surf'} focus-within:outline-[3px] focus-within:outline-offset-2 focus-within:outline-p`}
+              htmlFor="file-input"
+              className={`flex cursor-pointer flex-col items-center gap-3 rounded-card border-2 border-dashed px-4 py-10 text-center transition-colors duration-160 ${dragging ? 'border-p bg-p-soft' : 'border-line-strong bg-surf'} peer-focus-visible:outline-[3px] peer-focus-visible:outline-offset-2 peer-focus-visible:outline-p`}
             >
               <TutorCharacter mood={dragging ? 'cheer' : 'sleepy'} size={64} />
               <span className="flex items-center gap-2 text-lg font-semibold">

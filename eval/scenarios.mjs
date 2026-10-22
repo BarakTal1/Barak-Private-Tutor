@@ -1,6 +1,6 @@
 // Scenarios that test the tutor with a real model. Each one has a written pass condition
 // that a program checks. Run them with `EVAL_KEY=... npm run eval` (see eval/run.mjs).
-import { commonWords, hebrewWordsFound, looksFrench, mentionsNumber, wordCount } from './checks.mjs'
+import { commonWords, hebrewWordsFound, looksHebrew, mentionsNumber, wordCount } from './checks.mjs'
 
 const ANSWER = 70
 const ANGLES_PROMPT =
@@ -83,18 +83,18 @@ export const scenarios = [
   {
     id: 'teacher-prompt',
     title: 'The lesson follows the language, the level and the length of the teacher prompt',
-    pass: 'The plan language is French, the plan has 3 or 4 steps, and the first tutor message is in French with no long English sentence.',
+    pass: 'The plan language is Hebrew, the plan has 3 or 4 steps, and the first tutor message is in Hebrew.',
     async run(api) {
       const session = await api.startLesson({
         fixture: 'angles.md',
-        teacherPrompt: 'Teach this to 7th graders, in French. Be Socratic. Keep it under 6 minutes.',
+        teacherPrompt: 'Teach this to 7th graders, in Hebrew. Be Socratic. Keep it under 6 minutes.',
       })
       const { plan } = session.state
       const first = await session.begin()
-      const french = /fran(ç|c)|french|צרפת/i.test(plan.language)
+      const hebrew = /hebrew|עברית|^he$/i.test(plan.language)
       const steps = plan.steps.length >= 3 && plan.steps.length <= 4
-      const ok = french && steps && looksFrench(first.text)
-      return { ok, why: `Language "${plan.language}", ${plan.steps.length} steps, French text: ${looksFrench(first.text)}.` }
+      const ok = hebrew && steps && looksHebrew(first.text)
+      return { ok, why: `Language "${plan.language}", ${plan.steps.length} steps, Hebrew text: ${looksHebrew(first.text)}.` }
     },
   },
   {

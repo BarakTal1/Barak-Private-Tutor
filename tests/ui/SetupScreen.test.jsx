@@ -68,6 +68,13 @@ describe('the file step', () => {
     expect(continueButton()).toBeDisabled()
   })
 
+  test('the drop zone label points at the file input, so a click opens the picker', () => {
+    renderScreen(<App />)
+    const label = document.querySelector('[data-dropzone] label')
+    expect(label).toHaveAttribute('for', input().id)
+    expect(input().id).not.toBe('')
+  })
+
   test('the drop zone shows the drag-over state and takes a dropped file', () => {
     renderScreen(<App />)
     const zone = document.querySelector('[data-dropzone]')

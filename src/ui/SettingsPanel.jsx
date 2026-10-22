@@ -44,6 +44,7 @@ function Switch({ checked, onChange, label, hint }) {
 export default function SettingsPanel({ onClose }) {
   const { settings, update } = useSettings()
   const [showKey, setShowKey] = useState(false)
+  const activePreset = PROVIDER_PRESETS.find((preset) => preset.id === settings.providerId)
   const setProvider = (change) => update((s) => ({ ...s, provider: { ...s.provider, ...change } }))
 
   return (
@@ -84,6 +85,11 @@ export default function SettingsPanel({ onClose }) {
           <input id={id} dir="ltr" value={settings.provider.model} onChange={(e) => setProvider({ model: e.target.value })} className={FIELD} autoComplete="off" spellCheck={false} />
         )}
       </Field>
+      {activePreset?.keyUrl && (
+        <a href={activePreset.keyUrl} target="_blank" rel="noreferrer" className="-mt-2 self-start font-medium text-p-ink underline underline-offset-4">
+          {he.settings.getKey.replace('{provider}', activePreset.name)}
+        </a>
+      )}
       <Field label={he.settings.key}>
         {(id) => (
           <div className="relative">

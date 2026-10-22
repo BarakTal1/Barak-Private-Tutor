@@ -1,7 +1,7 @@
 import {
   commonWords,
   hebrewWordsFound,
-  looksFrench,
+  looksHebrew,
   mentionsNumber,
   wordCount,
 } from '../../eval/checks.mjs'
@@ -26,21 +26,17 @@ describe('mentionsNumber', () => {
   )
 })
 
-describe('looksFrench', () => {
-  test('is true for a French sentence', () => {
-    expect(looksFrench('Bonjour ! Un triangle est une figure avec trois côtés. Que pensez-vous de cela ?')).toBe(true)
+describe('looksHebrew', () => {
+  test('is true for a Hebrew sentence', () => {
+    expect(looksHebrew('שלום! משולש הוא צורה עם שלוש צלעות. מה דעתכם על כך?')).toBe(true)
   })
 
   test('is false for an English sentence', () => {
-    expect(looksFrench('A triangle is a shape with three sides. What do you think of that?')).toBe(false)
-  })
-
-  test('is false for a French sentence that is followed by a long English one', () => {
-    expect(looksFrench('Un triangle est une figure. The sum of the angles is 180 and that is the rule for the triangle.')).toBe(false)
+    expect(looksHebrew('A triangle is a shape with three sides. What do you think of that?')).toBe(false)
   })
 
   test('is false for an empty text', () => {
-    expect(looksFrench('')).toBe(false)
+    expect(looksHebrew('')).toBe(false)
   })
 })
 

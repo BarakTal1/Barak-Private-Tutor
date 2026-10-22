@@ -11,8 +11,8 @@ beforeEach(() => {
   sessionStorage.clear()
 })
 
-test('there are presets for Gemini, Groq, OpenRouter and a custom provider', () => {
-  expect(PROVIDER_PRESETS.map((p) => p.id)).toEqual(['gemini', 'groq', 'openrouter', 'custom'])
+test('there are presets for Anthropic, OpenAI, Gemini, Groq, OpenRouter and a custom provider', () => {
+  expect(PROVIDER_PRESETS.map((p) => p.id)).toEqual(['anthropic', 'openai', 'gemini', 'groq', 'openrouter', 'custom'])
   expect(PROVIDER_PRESETS.find((p) => p.id === 'gemini').vision).toBe(true)
   for (const preset of PROVIDER_PRESETS.filter((p) => p.id !== 'custom')) {
     expect(preset.baseUrl).toMatch(/^https:\/\//)
@@ -20,9 +20,15 @@ test('there are presets for Gemini, Groq, OpenRouter and a custom provider', () 
   }
 })
 
+test('the first three presets are Anthropic, OpenAI and Gemini, each with a key page', () => {
+  const [a, b, c] = PROVIDER_PRESETS
+  expect([a.id, b.id, c.id]).toEqual(['anthropic', 'openai', 'gemini'])
+  for (const preset of [a, b, c]) expect(preset.keyUrl).toMatch(/^https:\/\//)
+})
+
 test('defaults to the first preset with no key', () => {
   const settings = loadSettings()
-  expect(settings).toMatchObject({ providerId: 'gemini', key: '', rememberKey: false })
+  expect(settings).toMatchObject({ providerId: 'anthropic', key: '', rememberKey: false })
   expect(settings.provider.baseUrl).toBe(PROVIDER_PRESETS[0].baseUrl)
 })
 
@@ -58,12 +64,12 @@ test('the provider, model and vision switch are saved', () => {
 
 test('an unknown provider id falls back to the first preset', () => {
   localStorage.setItem('tmtf.settings.v1', JSON.stringify({ providerId: 'nope', provider: { baseUrl: 'x', model: 'y', vision: false } }))
-  expect(loadSettings().providerId).toBe('gemini')
+  expect(loadSettings().providerId).toBe('anthropic')
 })
 
 test('corrupt saved settings fall back to the defaults', () => {
   localStorage.setItem('tmtf.settings.v1', '{oops')
-  expect(loadSettings().providerId).toBe('gemini')
+  expect(loadSettings().providerId).toBe('anthropic')
 })
 
 test('applyPreset copies the preset and keeps the key', () => {
