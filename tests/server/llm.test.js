@@ -22,6 +22,8 @@ async function collect(iterator) {
 
 beforeEach(() => {
   retryPolicy.delaysMs = [0, 0]
+  retryPolicy.attemptMs = 45_000
+  retryPolicy.totalMs = 100_000
 })
 
 afterEach(() => {
@@ -251,5 +253,44 @@ describe('Gemini thinking level', () => {
     vi.stubGlobal('fetch', fetchMock)
     expect(await complete({ key: 'k', provider: gemini, messages })).toBe('ok')
     expect(JSON.parse(fetchMock.mock.calls[1][1].body).generationConfig).toBeUndefined()
+  })
+})
+
+describe('a model that does not answer', () => {
+  // A fetch that never answers, and stops when the signal aborts, like the real one.
+  const hang = (_url, { signal }) =>
+    new Promise((_, reject) => signal.addEventListener('abort', () => reject(signal.reason)))
+
+  test('becomes a timeout error after the time limit, with one more try', async () => {
+    retryPolicy.attemptMs = 20
+    const fetchMock = vi.fn(hang)
+    vi.stubGlobal('fetch', fetchMock)
+    await expect(complete({ key: 'k', provider, messages })).rejects.toMatchObject({ code: 'timeout', status: 504 })
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  test('the second try can succeed', async () => {
+    retryPolicy.attemptMs = 20
+    const fetchMock = vi
+      .fn()
+      .mockImplementationOnce(hang)
+      .mockImplementationOnce(async () => Response.json({ choices: [{ message: { content: 'ok' } }] }))
+    vi.stubGlobal('fetch', fetchMock)
+    expect(await complete({ key: 'k', provider, messages })).toBe('ok')
+  })
+
+  test('the whole call has a limit too', async () => {
+    retryPolicy.attemptMs = 50
+    retryPolicy.totalMs = 30
+    vi.stubGlobal('fetch', vi.fn(hang))
+    await expect(complete({ key: 'k', provider, messages })).rejects.toMatchObject({ code: 'timeout' })
+  })
+
+  test('a stop by the student is not a timeout', async () => {
+    const controller = new AbortController()
+    vi.stubGlobal('fetch', vi.fn(hang))
+    const call = complete({ key: 'k', provider, messages, signal: controller.signal })
+    controller.abort()
+    await expect(call).rejects.toMatchObject({ name: expect.stringMatching(/Abort/) })
   })
 })

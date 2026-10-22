@@ -98,7 +98,9 @@ function request({ key, provider, messages, stream, thinking = true }) {
 
 // A busy model often answers again after a short wait. These statuses are tried again.
 const RETRY_STATUSES = [429, 500, 502, 503, 504]
-export const retryPolicy = { delaysMs: [1000, 2500], maxRetryAfterMs: 5000 }
+// A model that does not answer must not keep the student waiting until the host stops the function.
+// Each try gets a time limit (for a stream, the limit is for the first answer), and the whole call too.
+export const retryPolicy = { delaysMs: [1000, 2500], maxRetryAfterMs: 5000, attemptMs: 45_000, totalMs: 100_000 }
 
 const wait = (ms, signal) =>
   new Promise((resolve, reject) => {
@@ -117,16 +119,27 @@ function retryDelay(response, attempt) {
   return Number.isFinite(asked) && asked > 0 ? Math.min(asked, retryPolicy.maxRetryAfterMs) : base
 }
 
+const timedOut = () => new HttpError(504, 'timeout', 'The model took too long to answer.')
+
 async function post({ key, provider, messages, stream, signal }) {
+  const started = Date.now()
   let thinking = true
   for (let attempt = 0; ; attempt++) {
     const { url, headers, body } = request({ key, provider, messages, stream, thinking })
+    const left = retryPolicy.totalMs - (Date.now() - started)
+    if (left <= 0) throw timedOut()
     const canRetry = attempt < retryPolicy.delaysMs.length
+    const limit = AbortSignal.timeout(Math.min(retryPolicy.attemptMs, left))
     let response
     try {
-      response = await fetch(url, { method: 'POST', headers, body, signal })
+      response = await fetch(url, { method: 'POST', headers, body, signal: signal ? AbortSignal.any([signal, limit]) : limit })
     } catch (err) {
-      if (err.name === 'AbortError') throw err
+      if (signal?.aborted) throw err
+      if (limit.aborted) {
+        // One more try, because a slow answer is often a one-time stall.
+        if (attempt >= 1 || !canRetry) throw timedOut()
+        continue
+      }
       if (!canRetry) throw new HttpError(502, 'provider_error', 'Could not reach the provider.')
       await wait(retryPolicy.delaysMs[attempt], signal)
       continue
