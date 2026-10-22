@@ -117,6 +117,7 @@ export const he = {
   lesson: {
     stepCounter: 'שלב {current} מתוך {total}',
     exit: 'יציאה',
+    backToUpload: 'חזרה להעלאת קובץ',
     exitConfirm: 'לצאת מהשיעור? ההתקדמות לא תישמר.',
     pathLabel: 'ההתקדמות בשיעור',
     outline: 'מפת השיעור',
@@ -166,6 +167,7 @@ export const he = {
   // Texts for an error of the server or of the network, by code. `action: true` offers the settings.
   apiErrors: {
     bad_key: { title: 'מפתח ה-API לא תקין', action: true },
+    overloaded: { title: 'המודל עמוס כרגע. נסו שוב בעוד רגע או בחרו מודל אחר', action: true },
     rate_limited: { title: 'יותר מדי בקשות, נסו שוב בעוד כמה שניות' },
     no_vision: { title: 'המודל שבחרתם לא יודע לקרוא תמונות', action: true },
     network: { title: 'אין חיבור לאינטרנט' },

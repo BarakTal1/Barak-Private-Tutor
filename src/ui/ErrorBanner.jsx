@@ -1,11 +1,11 @@
 import Button from './Button.jsx'
 import { he } from './he.js'
-import { AlertIcon, InfoIcon, RefreshIcon } from './icons.jsx'
+import { AlertIcon, ArrowEndIcon, InfoIcon, RefreshIcon } from './icons.jsx'
 import { describeError } from './messages.js'
 
 // A problem with the file is a notice (yellow), not a fault of the system (red).
 // Red is only for faults of the system, such as a wrong key or a lost connection.
-export default function ErrorBanner({ error, onRetry, onSettings, className = '' }) {
+export default function ErrorBanner({ error, onRetry, onSettings, onBack, className = '' }) {
   const { title, body, action } = describeError(error)
   const notice = error?.name === 'ParseError'
   const tone = notice ? 'bg-hint-soft text-hint-ink ring-hint-line' : 'bg-err-soft text-err-ink ring-err-line'
@@ -21,7 +21,7 @@ export default function ErrorBanner({ error, onRetry, onSettings, className = ''
             {error.message}
           </p>
         )}
-        {((action === 'settings' && onSettings) || (onRetry && !notice)) && (
+        {((action === 'settings' && onSettings) || (onRetry && !notice) || onBack) && (
           <div className="mt-2 flex flex-wrap gap-2">
             {action === 'settings' && onSettings && (
               <Button variant="secondary" onClick={onSettings} className="min-h-11 px-4 text-base">
@@ -32,6 +32,12 @@ export default function ErrorBanner({ error, onRetry, onSettings, className = ''
               <Button variant="secondary" onClick={onRetry} className="min-h-11 px-4 text-base">
                 <RefreshIcon size={18} />
                 {he.common.retry}
+              </Button>
+            )}
+            {onBack && (
+              <Button variant="secondary" onClick={onBack} className="min-h-11 px-4 text-base">
+                <ArrowEndIcon size={18} />
+                {he.lesson.backToUpload}
               </Button>
             )}
           </div>

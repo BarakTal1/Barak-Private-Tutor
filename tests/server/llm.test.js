@@ -1,4 +1,4 @@
-import { complete, mapProviderError, streamChat, toGeminiBody } from '../../server/llm.js'
+import { complete, mapProviderError, retryPolicy, streamChat, toGeminiBody } from '../../server/llm.js'
 
 const provider = { baseUrl: 'https://api.example.com/v1/', model: 'model-x' }
 const messages = [{ role: 'user', content: 'Hello' }]
@@ -19,6 +19,10 @@ async function collect(iterator) {
   for await (const part of iterator) parts.push(part)
   return parts
 }
+
+beforeEach(() => {
+  retryPolicy.delaysMs = [0, 0]
+})
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -186,5 +190,66 @@ describe('Gemini native API', () => {
     vi.stubGlobal('fetch', fetchMock)
     await complete({ key: 'k', provider, messages })
     expect(fetchMock.mock.calls[0][1].headers.Authorization).toBe('Bearer k')
+  })
+})
+
+describe('busy models', () => {
+  const ok = () => Response.json({ choices: [{ message: { content: 'ok' } }] })
+  const busy = () => new Response('{"error":{"message":"high demand"}}', { status: 503 })
+
+  test('a 503 is tried again and then succeeds', async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(busy()).mockResolvedValueOnce(busy()).mockResolvedValueOnce(ok())
+    vi.stubGlobal('fetch', fetchMock)
+    expect(await complete({ key: 'k', provider, messages })).toBe('ok')
+    expect(fetchMock).toHaveBeenCalledTimes(3)
+  })
+
+  test('a 503 that does not stop becomes the overloaded error', async () => {
+    const fetchMock = vi.fn(async () => busy())
+    vi.stubGlobal('fetch', fetchMock)
+    await expect(complete({ key: 'k', provider, messages })).rejects.toMatchObject({ code: 'overloaded', status: 503 })
+    expect(fetchMock).toHaveBeenCalledTimes(3)
+  })
+
+  test('a wrong key is not tried again', async () => {
+    const fetchMock = vi.fn(async () => new Response('x', { status: 401 }))
+    vi.stubGlobal('fetch', fetchMock)
+    await expect(complete({ key: 'k', provider, messages })).rejects.toMatchObject({ code: 'bad_key' })
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  test('a lost connection is tried again', async () => {
+    const fetchMock = vi.fn().mockRejectedValueOnce(new TypeError('fetch failed')).mockResolvedValueOnce(ok())
+    vi.stubGlobal('fetch', fetchMock)
+    expect(await complete({ key: 'k', provider, messages })).toBe('ok')
+  })
+})
+
+describe('Gemini thinking level', () => {
+  const gemini = { baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai', model: 'gemini-3.8-flash' }
+  const reply = () => Response.json({ candidates: [{ content: { parts: [{ text: 'ok' }] } }] })
+
+  test('a Gemini 3 model gets a low thinking level', async () => {
+    const fetchMock = vi.fn(async () => reply())
+    vi.stubGlobal('fetch', fetchMock)
+    await complete({ key: 'k', provider: gemini, messages })
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).generationConfig.thinkingConfig.thinkingLevel).toBe('low')
+  })
+
+  test('an older model gets no thinking setting', async () => {
+    const fetchMock = vi.fn(async () => reply())
+    vi.stubGlobal('fetch', fetchMock)
+    await complete({ key: 'k', provider: { ...gemini, model: 'gemini-2.5-flash' }, messages })
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).generationConfig).toBeUndefined()
+  })
+
+  test('when the model rejects the setting, the call is sent again without it', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response('{"error":{"message":"Unknown name thinkingLevel"}}', { status: 400 }))
+      .mockResolvedValueOnce(reply())
+    vi.stubGlobal('fetch', fetchMock)
+    expect(await complete({ key: 'k', provider: gemini, messages })).toBe('ok')
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body).generationConfig).toBeUndefined()
   })
 })

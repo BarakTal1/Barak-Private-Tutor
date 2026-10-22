@@ -5,7 +5,7 @@ const COMPACT_THRESHOLD_CHARS = 60_000
 const COMPACT_CHARS = 300
 
 // `code` tells the UI which Hebrew text to show. It is a code of the server (bad_key,
-// rate_limited, no_vision, bad_request, too_large, provider_error) or timeout or network.
+// rate_limited, overloaded, no_vision, bad_request, too_large, provider_error) or timeout or network.
 export class ApiClientError extends Error {
   constructor(code, message) {
     super(message)

@@ -139,3 +139,13 @@ describe('buildTurnMessages', () => {
     expect(system(build())).not.toMatch(/recap/i)
   })
 })
+
+describe('the tutor system prompt file', () => {
+  test('it is the start of the system message and has the method and the guardrails', async () => {
+    const { TUTOR_SYSTEM_PROMPT } = await import('../../server/tutor-prompt.js')
+    const system = buildTurnMessages({ ...base, request: 'answer', forceExplain: false })[0].content
+    expect(system.startsWith(TUTOR_SYSTEM_PROMPT)).toBe(true)
+    expect(TUTOR_SYSTEM_PROMPT).toMatch(/# TEACHING METHOD/)
+    expect(TUTOR_SYSTEM_PROMPT).toMatch(/# GUARDRAILS/)
+  })
+})

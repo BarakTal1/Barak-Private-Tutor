@@ -79,6 +79,11 @@ export default function LessonScreen() {
     dispatch({ type: 'reset' })
   }
 
+  const backToUpload = () => {
+    tutor.stop()
+    dispatch({ type: 'reset' })
+  }
+
   const sourceMessage = messages.find((message) => message.id === sourceOf)
   return (
     <div data-lesson className="fixed inset-0 flex h-dvh flex-col bg-bg" style={height ? { height } : undefined}>
@@ -131,7 +136,7 @@ export default function LessonScreen() {
       </div>
       <div className="border-t border-line bg-surf">
         <div className="mx-auto max-w-2xl">
-          {error && <ErrorBanner error={error} onRetry={tutor.retry} onSettings={openPanel} className="m-3 mb-0" />}
+          {error && <ErrorBanner error={error} onRetry={tutor.retry} onSettings={openPanel} onBack={backToUpload} className="m-3 mb-0" />}
           <Composer streaming={streaming} hintLevel={hintLevel} maxHints={MAX_HINT_LEVEL} onSend={tutor.send} onStop={tutor.stop} onHint={tutor.hint} />
         </div>
       </div>

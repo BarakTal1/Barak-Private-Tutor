@@ -31,6 +31,28 @@ describe('setup phases', () => {
   })
 })
 
+describe('navigate (browser back and forward)', () => {
+  test('back from the lesson to the report keeps the file', () => {
+    const state = run(lessonState(), { type: 'navigate', phase: 'report' })
+    expect(state).toMatchObject({ phase: 'report', fileName: 'triangles.pdf' })
+  })
+
+  test('forward to the lesson keeps the plan', () => {
+    const state = run(lessonState(), { type: 'navigate', phase: 'report' }, { type: 'navigate', phase: 'lesson' })
+    expect(state.phase).toBe('lesson')
+  })
+
+  test('back to the first screen starts again', () => {
+    expect(run(lessonState(), { type: 'navigate', phase: 'setup' })).toEqual(initialState())
+  })
+
+  test('a screen without its data falls back to the first screen', () => {
+    expect(run(initialState(), { type: 'navigate', phase: 'lesson' })).toEqual(initialState())
+    expect(run(initialState(), { type: 'navigate', phase: 'report' })).toEqual(initialState())
+    expect(run(lessonState(), { type: 'navigate', phase: 'done' }).phase).toBe('setup')
+  })
+})
+
 describe('tutor turns', () => {
   test('stepCounter returns { current: 3, total: 7 }', () => {
     const seven = { ...plan, steps: Array.from({ length: 7 }, (_, i) => ({ ...plan.steps[0], id: `s${i}` })) }

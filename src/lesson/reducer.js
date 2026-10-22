@@ -156,6 +156,14 @@ export function reducer(state, action) {
       return dropEmptyTutor({ ...state, streaming: false, error: action.error })
     case 'clearError':
       return { ...state, error: null }
+    // The browser back and forward buttons. A screen without the data it needs falls back to the first screen.
+    case 'navigate': {
+      const left = { ...state, streaming: false, error: null }
+      if (action.phase === 'report' && state.ingest) return { ...left, phase: 'report' }
+      if (action.phase === 'lesson' && state.plan) return { ...left, phase: isComplete(state.progress) ? 'done' : 'lesson' }
+      if (action.phase === 'done' && state.plan && isComplete(state.progress)) return { ...left, phase: 'done' }
+      return initialState()
+    }
     case 'reset':
       return initialState()
     default:

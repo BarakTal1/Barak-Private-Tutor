@@ -11,6 +11,9 @@ export function mapProviderError(status, bodyText) {
   if (status === 429) {
     return new HttpError(429, 'rate_limited', 'The provider says there are too many requests.')
   }
+  if (status === 503) {
+    return new HttpError(503, 'overloaded', 'The model is busy. Try again in a moment or choose another model.')
+  }
   // Gemini answers a wrong key with 400, not 401 ("API key not valid", or "Invalid Auth key" for keys that start with AQ).
   if (status === 400 && API_KEY_ERROR.test(bodyText)) {
     return new HttpError(401, 'bad_key', 'The provider rejected the API key.')
@@ -70,14 +73,20 @@ export function toGeminiBody(messages) {
 const geminiText = (data) =>
   (data?.candidates?.[0]?.content?.parts ?? []).map((part) => (typeof part.text === 'string' ? part.text : '')).join('')
 
-function request({ key, provider, messages, stream }) {
+// Gemini 3 models think before they answer, which adds seconds. A tutor reply needs little thinking.
+const usesThinkingLevel = (provider) => /^gemini-3/.test(provider.model)
+
+function request({ key, provider, messages, stream, thinking = true }) {
   if (isGemini(provider)) {
     const base = provider.baseUrl.replace(/\/+$/, '').replace(/\/openai$/, '')
     const method = stream ? 'streamGenerateContent?alt=sse' : 'generateContent'
     return {
       url: `${base}/models/${encodeURIComponent(provider.model)}:${method}`,
       headers: { 'x-goog-api-key': key, 'Content-Type': 'application/json' },
-      body: JSON.stringify(toGeminiBody(messages)),
+      body: JSON.stringify({
+        ...toGeminiBody(messages),
+        ...(thinking && usesThinkingLevel(provider) ? { generationConfig: { thinkingConfig: { thinkingLevel: 'low' } } } : {}),
+      }),
     }
   }
   return {
@@ -87,17 +96,55 @@ function request({ key, provider, messages, stream }) {
   }
 }
 
+// A busy model often answers again after a short wait. These statuses are tried again.
+const RETRY_STATUSES = [429, 500, 502, 503, 504]
+export const retryPolicy = { delaysMs: [1000, 2500], maxRetryAfterMs: 5000 }
+
+const wait = (ms, signal) =>
+  new Promise((resolve, reject) => {
+    if (signal?.aborted) return reject(Object.assign(new Error('Aborted'), { name: 'AbortError' }))
+    const timer = setTimeout(resolve, ms)
+    signal?.addEventListener('abort', () => {
+      clearTimeout(timer)
+      reject(Object.assign(new Error('Aborted'), { name: 'AbortError' }))
+    })
+    return undefined
+  })
+
+function retryDelay(response, attempt) {
+  const asked = Number(response?.headers?.get('retry-after')) * 1000
+  const base = retryPolicy.delaysMs[attempt]
+  return Number.isFinite(asked) && asked > 0 ? Math.min(asked, retryPolicy.maxRetryAfterMs) : base
+}
+
 async function post({ key, provider, messages, stream, signal }) {
-  const { url, headers, body } = request({ key, provider, messages, stream })
-  let response
-  try {
-    response = await fetch(url, { method: 'POST', headers, body, signal })
-  } catch (err) {
-    if (err.name === 'AbortError') throw err
-    throw new HttpError(502, 'provider_error', 'Could not reach the provider.')
+  let thinking = true
+  for (let attempt = 0; ; attempt++) {
+    const { url, headers, body } = request({ key, provider, messages, stream, thinking })
+    const canRetry = attempt < retryPolicy.delaysMs.length
+    let response
+    try {
+      response = await fetch(url, { method: 'POST', headers, body, signal })
+    } catch (err) {
+      if (err.name === 'AbortError') throw err
+      if (!canRetry) throw new HttpError(502, 'provider_error', 'Could not reach the provider.')
+      await wait(retryPolicy.delaysMs[attempt], signal)
+      continue
+    }
+    if (response.ok) return response
+    const text = await response.text()
+    // A model that does not know the thinking setting is asked again without it.
+    if (thinking && isGemini(provider) && response.status === 400 && /thinking/i.test(text)) {
+      thinking = false
+      attempt--
+      continue
+    }
+    if (canRetry && RETRY_STATUSES.includes(response.status)) {
+      await wait(retryDelay(response, attempt), signal)
+      continue
+    }
+    throw mapProviderError(response.status, text)
   }
-  if (!response.ok) throw mapProviderError(response.status, await response.text())
-  return response
 }
 
 export async function complete({ key, provider, messages, signal }) {
