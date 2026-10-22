@@ -4,7 +4,7 @@ A teacher uploads a file and writes a short prompt. An AI tutor then teaches the
 
 The interface is in Hebrew and runs right to left. The lesson can be in any language ("Teach this to 7th graders, in French. Be Socratic. Keep it under 15 minutes.").
 
-- **Live app:** _add the Vercel URL here_
+- **Live app:** https://barak-private-tutor.vercel.app/
 - **Decisions, weak points and test scenarios:** [DECISIONS.md](DECISIONS.md)
 
 ## How to use the app
