@@ -1,4 +1,4 @@
-import { complete, mapProviderError, streamChat } from '../../server/llm.js'
+import { complete, mapProviderError, streamChat, toGeminiBody } from '../../server/llm.js'
 
 const provider = { baseUrl: 'https://api.example.com/v1/', model: 'model-x' }
 const messages = [{ role: 'user', content: 'Hello' }]
@@ -135,5 +135,51 @@ describe('mapProviderError', () => {
 
   test('never copies the provider body into the message', () => {
     expect(mapProviderError(500, 'secret-body-text').message).not.toContain('secret-body-text')
+  })
+})
+
+describe('Gemini native API', () => {
+  const gemini = { baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai', model: 'gemini-2.5-flash' }
+
+  test('sends the key in x-goog-api-key to the native endpoint', async () => {
+    const fetchMock = vi.fn(async () => Response.json({ candidates: [{ content: { parts: [{ text: 'ok' }] } }] }))
+    vi.stubGlobal('fetch', fetchMock)
+    expect(await complete({ key: 'AQ.abc', provider: gemini, messages })).toBe('ok')
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url).toBe('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent')
+    expect(init.headers['x-goog-api-key']).toBe('AQ.abc')
+    expect(init.headers.Authorization).toBeUndefined()
+  })
+
+  test('streams text from the native SSE format', async () => {
+    const fetchMock = vi.fn(async () =>
+      sseResponse([
+        'data: {"candidates":[{"content":{"parts":[{"text":"Hel"}]}}]}\n\n',
+        'data: {"candidates":[{"content":{"parts":[{"text":"lo"}]}}]}\n\n',
+      ]),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+    expect(await collect(streamChat({ key: 'k', provider: gemini, messages }))).toEqual(['Hel', 'lo'])
+    expect(fetchMock.mock.calls[0][0]).toContain(':streamGenerateContent?alt=sse')
+  })
+
+  test('converts system, assistant and image messages', () => {
+    const body = toGeminiBody([
+      { role: 'system', content: 'Be kind' },
+      { role: 'user', content: [{ type: 'text', text: 'Read' }, { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,AAA' } }] },
+      { role: 'assistant', content: 'Done' },
+    ])
+    expect(body.systemInstruction).toEqual({ parts: [{ text: 'Be kind' }] })
+    expect(body.contents).toEqual([
+      { role: 'user', parts: [{ text: 'Read' }, { inlineData: { mimeType: 'image/jpeg', data: 'AAA' } }] },
+      { role: 'model', parts: [{ text: 'Done' }] },
+    ])
+  })
+
+  test('other providers keep the Bearer header', async () => {
+    const fetchMock = vi.fn(async () => Response.json({ choices: [{ message: { content: 'ok' } }] }))
+    vi.stubGlobal('fetch', fetchMock)
+    await complete({ key: 'k', provider, messages })
+    expect(fetchMock.mock.calls[0][1].headers.Authorization).toBe('Bearer k')
   })
 })
