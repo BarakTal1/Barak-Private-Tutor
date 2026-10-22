@@ -19,7 +19,20 @@ export function mapProviderError(status, bodyText) {
   if ([400, 404, 415, 422].includes(status) && IMAGE_ERROR.test(bodyText)) {
     return new HttpError(422, 'no_vision', 'This model cannot read images.')
   }
-  return new HttpError(502, 'provider_error', 'The provider returned an error.')
+  return new HttpError(502, 'provider_error', `The provider returned an error (${status}): ${providerReason(bodyText)}`)
+}
+
+// A short reason from the provider, so the user can tell a wrong model from a missing quota.
+function providerReason(bodyText) {
+  let reason = ''
+  try {
+    const data = JSON.parse(bodyText)
+    const error = (Array.isArray(data) ? data[0] : data)?.error
+    reason = typeof error === 'string' ? error : (error?.message ?? '')
+  } catch {
+    // The body is not JSON.
+  }
+  return (reason || String(bodyText)).replace(/\s+/g, ' ').trim().slice(0, 200)
 }
 
 // Keys that start with "AQ." (the new Google AI Studio keys) are rejected by the OpenAI-compatible

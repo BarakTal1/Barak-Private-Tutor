@@ -133,8 +133,13 @@ describe('mapProviderError', () => {
     expect(mapProviderError(status, body).code).toBe(code)
   })
 
-  test('never copies the provider body into the message', () => {
-    expect(mapProviderError(500, 'secret-body-text').message).not.toContain('secret-body-text')
+  test('adds the status and a short reason to a provider error', () => {
+    const error = mapProviderError(500, '{"error":{"message":"Model overloaded"}}')
+    expect(error.message).toBe('The provider returned an error (500): Model overloaded')
+  })
+
+  test('cuts a long reason', () => {
+    expect(mapProviderError(500, 'x'.repeat(1000)).message.length).toBeLessThan(260)
   })
 })
 

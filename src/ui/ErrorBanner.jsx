@@ -16,6 +16,11 @@ export default function ErrorBanner({ error, onRetry, onSettings, className = ''
       <div className="flex min-w-0 flex-col gap-1">
         <p className="font-semibold">{title}</p>
         {body && <p className="text-base">{body}</p>}
+        {error?.code === 'provider_error' && error.message && (
+          <p dir="ltr" className="text-start text-sm opacity-80">
+            {error.message}
+          </p>
+        )}
         {((action === 'settings' && onSettings) || (onRetry && !notice)) && (
           <div className="mt-2 flex flex-wrap gap-2">
             {action === 'settings' && onSettings && (
