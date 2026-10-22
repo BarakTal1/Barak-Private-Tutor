@@ -93,3 +93,8 @@ test('saveSettings does not throw when storage is full', () => {
   expect(() => saveSettings(loadSettings())).not.toThrow()
   spy.mockRestore()
 })
+
+test('a saved retired Gemini model moves to the new name', () => {
+  localStorage.setItem('tmtf.settings.v1', JSON.stringify({ providerId: 'gemini', provider: { baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai', model: 'gemini-2.5-flash', vision: true }, rememberKey: false }))
+  expect(loadSettings().provider.model).toBe('gemini-3.8-flash')
+})

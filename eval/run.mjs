@@ -2,7 +2,7 @@
 // It drives the same code as the browser: the real functions in api/, and the real lesson reducer.
 //
 //   EVAL_KEY=<your key> npm run eval                 (start the app first: npm run dev)
-//   EVAL_KEY=... EVAL_MODEL=gemini-2.5-flash EVAL_BASE_URL=https://... BASE_URL=https://my-app.vercel.app npm run eval
+//   EVAL_KEY=... EVAL_MODEL=gemini-3.8-flash EVAL_BASE_URL=https://... BASE_URL=https://my-app.vercel.app npm run eval
 //   node eval/run.mjs wrong-answer hint-request      (only some scenarios)
 //
 // The key is read from the environment and sent only in the x-llm-key header. It is never printed or written.
@@ -20,7 +20,7 @@ const BASE_URL = process.env.BASE_URL ?? 'http://localhost:5173'
 const KEY = process.env.EVAL_KEY
 const provider = {
   baseUrl: process.env.EVAL_BASE_URL ?? 'https://generativelanguage.googleapis.com/v1beta/openai',
-  model: process.env.EVAL_MODEL ?? 'gemini-2.5-flash',
+  model: process.env.EVAL_MODEL ?? 'gemini-3.8-flash',
 }
 
 if (!KEY) {

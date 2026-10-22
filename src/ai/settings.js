@@ -3,17 +3,22 @@
 export const PROVIDER_PRESETS = [
   { id: 'anthropic', name: 'Anthropic', baseUrl: 'https://api.anthropic.com/v1', model: 'claude-sonnet-5-5', vision: true, keyUrl: 'https://console.anthropic.com/settings/keys' },
   { id: 'openai', name: 'OpenAI', baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o-mini', vision: true, keyUrl: 'https://platform.openai.com/api-keys' },
-  { id: 'gemini', name: 'Google Gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai', model: 'gemini-2.5-flash', vision: true, keyUrl: 'https://aistudio.google.com/apikey' },
+  { id: 'gemini', name: 'Google Gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai', model: 'gemini-3.8-flash', vision: true, keyUrl: 'https://aistudio.google.com/apikey' },
   { id: 'groq', name: 'Groq', baseUrl: 'https://api.groq.com/openai/v1', model: 'llama-3.3-70b-versatile', vision: false, keyUrl: 'https://console.groq.com/keys' },
   { id: 'openrouter', name: 'OpenRouter', baseUrl: 'https://openrouter.ai/api/v1', model: 'meta-llama/llama-3.3-70b-instruct:free', vision: false, keyUrl: 'https://openrouter.ai/settings/keys' },
   { id: 'custom', name: 'Custom', baseUrl: '', model: '', vision: false },
 ]
+
+// Models that the provider no longer gives to new users. A saved setting with one of them moves to the new name.
+const RETIRED_MODELS = { 'gemini-2.5-flash': 'gemini-3.8-flash' }
 
 const SETTINGS_KEY = 'tmtf.settings.v1'
 const SESSION_KEY = 'tmtf.key.v1'
 
 const providerOf = ({ baseUrl, model, vision }) => ({ baseUrl, model, vision })
 const presetById = (id) => PROVIDER_PRESETS.find((preset) => preset.id === id)
+
+const retired = (provider) => (RETIRED_MODELS[provider?.model] ? { model: RETIRED_MODELS[provider.model] } : {})
 
 function defaults() {
   const [first] = PROVIDER_PRESETS
@@ -40,7 +45,7 @@ export function loadSettings() {
     const rememberKey = saved.rememberKey === true
     return {
       providerId: saved.providerId,
-      provider: providerOf({ ...presetById(saved.providerId), ...saved.provider }),
+      provider: providerOf({ ...presetById(saved.providerId), ...saved.provider, ...retired(saved.provider) }),
       rememberKey,
       key: (rememberKey ? saved.key : read(sessionStorage, SESSION_KEY)) ?? '',
     }
