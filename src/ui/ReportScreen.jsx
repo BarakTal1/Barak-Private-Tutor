@@ -6,7 +6,8 @@ import Button from './Button.jsx'
 import Card from './Card.jsx'
 import Chip from './Chip.jsx'
 import ErrorBanner from './ErrorBanner.jsx'
-import { fmt, he } from './he.js'
+import { fmt } from './he.js'
+import { useStrings } from './i18n.jsx'
 import { AlertIcon, ArrowEndIcon, ArrowStartIcon, CheckIcon, EyeIcon, InfoIcon } from './icons.jsx'
 import Markdown from './Markdown.jsx'
 import { describeWarning } from './messages.js'
@@ -17,14 +18,15 @@ import { useDelayed } from './useDelayed.js'
 const PREVIEW_CHARS = 1500
 const SLOW_MS = 4000
 
-const METHODS = {
+const methodsOf = (he) => ({
   text: { tone: 'ok', label: he.report.chipText, Icon: CheckIcon },
   vision: { tone: 'primary', label: he.report.chipVision, Icon: EyeIcon },
   skipped: { tone: 'hint', label: he.report.chipSkipped, Icon: InfoIcon },
   failed: { tone: 'error', label: he.report.chipFailed, Icon: AlertIcon },
-}
+})
 
 function Planning({ slow }) {
+  const he = useStrings()
   return (
     <div role="status" className="fixed inset-0 z-30 flex flex-col items-center justify-center gap-6 bg-bg px-6 text-center">
       <TutorCharacter mood="think" size={112} />
@@ -40,6 +42,7 @@ function Planning({ slow }) {
 }
 
 export default function ReportScreen() {
+  const he = useStrings()
   const { state, dispatch } = useLesson()
   const { settings, openPanel } = useSettings()
   const { ingest, teacherPrompt } = state
@@ -85,7 +88,7 @@ export default function ReportScreen() {
 
       <ul aria-label={he.report.title} className="flex flex-wrap gap-2">
         {ingest.pages.map(({ page, method }) => {
-          const { tone, label, Icon } = METHODS[method]
+          const { tone, label, Icon } = methodsOf(he)[method]
           return (
             <li key={page} className="flex items-center gap-2 rounded-ctl bg-surf py-1.5 ps-3 pe-1.5 shadow-card">
               <span className="text-sm font-medium">{fmt(he.report.page, { number: page })}</span>{' '}
@@ -102,7 +105,7 @@ export default function ReportScreen() {
           {ingest.warnings.map((warning) => (
             <p key={`${warning.code}-${JSON.stringify(warning.params)}`} className="flex items-start gap-2">
               <InfoIcon className="mt-1" />
-              <span>{describeWarning(warning)}</span>
+              <span>{describeWarning(warning, he)}</span>
             </p>
           ))}
         </div>

@@ -1,7 +1,8 @@
 import { useId, useRef, useState } from 'react'
 import { MAX_STUDENT_CHARS } from '../../shared/limits.js'
 import Button from './Button.jsx'
-import { fmt, he } from './he.js'
+import { fmt } from './he.js'
+import { useStrings } from './i18n.jsx'
 import { BulbIcon, SendIcon, StopIcon } from './icons.jsx'
 
 const MAX_HEIGHT_PX = 160
@@ -9,6 +10,7 @@ const MAX_HEIGHT_PX = 160
 // The answer box. Enter sends, Shift+Enter adds a line, and Send turns into Stop while the tutor answers.
 // The box is never blocked: the student can write the next answer while the tutor is still writing.
 export default function Composer({ disabled = false, streaming, hintLevel, maxHints = 2, onSend, onStop, onHint }) {
+  const he = useStrings()
   const [text, setText] = useState('')
   const box = useRef(null)
   const id = useId()

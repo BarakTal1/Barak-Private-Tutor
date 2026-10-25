@@ -1,10 +1,11 @@
 import Confetti from './Confetti.jsx'
-import { he } from './he.js'
+import { useStrings } from './i18n.jsx'
 import { CheckIcon } from './icons.jsx'
 import { useReducedMotion } from './motion.js'
 
 // "השלב הושלם!" for a moment after a step is done, with a bigger burst than a praise badge.
 export default function StepRibbon() {
+  const he = useStrings()
   const reduced = useReducedMotion()
   const entrance = reduced
     ? 'animate-[fade-in_200ms_ease-out_both]'

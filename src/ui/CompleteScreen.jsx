@@ -6,7 +6,8 @@ import Card from './Card.jsx'
 import ChatMessage from './ChatMessage.jsx'
 import Confetti from './Confetti.jsx'
 import { directionOf } from './direction.js'
-import { fmt, he } from './he.js'
+import { fmt } from './he.js'
+import { useStrings } from './i18n.jsx'
 import { ArrowEndIcon, CheckIcon, InfoIcon, ListIcon, RefreshIcon } from './icons.jsx'
 import { useReducedMotion } from './motion.js'
 import Screen from './Screen.jsx'
@@ -27,6 +28,7 @@ function Stat({ label, value }) {
 
 // The whole chat again, to read. It has no answer box.
 function ChatReview({ state, onBack }) {
+  const he = useStrings()
   const [sourceOf, setSourceOf] = useState(null)
   const sourceMessage = state.messages.find((message) => message.id === sourceOf)
   return (
@@ -58,6 +60,7 @@ function ChatReview({ state, onBack }) {
 }
 
 export default function CompleteScreen() {
+  const he = useStrings()
   const { state, dispatch } = useLesson()
   const reduced = useReducedMotion()
   const [reviewing, setReviewing] = useState(false)

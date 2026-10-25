@@ -1,5 +1,5 @@
 import Button from './Button.jsx'
-import { he } from './he.js'
+import { useStrings } from './i18n.jsx'
 import HintLamps from './HintLamps.jsx'
 import { ArrowStartIcon, BookIcon, BulbIcon } from './icons.jsx'
 import Markdown from './Markdown.jsx'
@@ -29,6 +29,7 @@ function BubbleTitle({ children }) {
 }
 
 export default function ChatMessage({ message, praise, hintLevel, isLast, streaming, slow, dir, onSource, onContinue }) {
+  const he = useStrings()
   if (message.role === 'student') {
     return (
       <article data-role="student" data-message-id={message.id} className="max-w-[85%] self-end">

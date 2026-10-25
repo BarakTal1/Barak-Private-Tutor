@@ -1,12 +1,13 @@
 import Button from './Button.jsx'
-import { he } from './he.js'
+import { useStrings } from './i18n.jsx'
 import { AlertIcon, ArrowEndIcon, InfoIcon, RefreshIcon } from './icons.jsx'
 import { describeError } from './messages.js'
 
 // A problem with the file is a notice (yellow), not a fault of the system (red).
 // Red is only for faults of the system, such as a wrong key or a lost connection.
 export default function ErrorBanner({ error, onRetry, onSettings, onBack, className = '' }) {
-  const { title, body, action } = describeError(error)
+  const he = useStrings()
+  const { title, body, action } = describeError(error, he)
   const notice = error?.name === 'ParseError'
   const tone = notice ? 'bg-hint-soft text-hint-ink ring-hint-line' : 'bg-err-soft text-err-ink ring-err-line'
   const Icon = notice ? InfoIcon : AlertIcon

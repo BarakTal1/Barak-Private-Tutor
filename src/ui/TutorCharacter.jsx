@@ -1,4 +1,5 @@
-import { fmt, he } from './he.js'
+import { fmt } from './he.js'
+import { useStrings } from './i18n.jsx'
 import { useReducedMotion } from './motion.js'
 
 // Barak, the tutor: a small lightning bolt. Ported from the design file Tutor.dc.html.
@@ -111,6 +112,7 @@ function Extras({ mood, move }) {
 }
 
 export default function TutorCharacter({ mood = 'talk', size = 48 }) {
+  const he = useStrings()
   const reduced = useReducedMotion()
   const move = (animation) => (reduced ? 'none' : animation)
   const happy = HAPPY.has(mood)

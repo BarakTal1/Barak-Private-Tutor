@@ -1,9 +1,10 @@
 import Drawer from './Drawer.jsx'
-import { he } from './he.js'
+import { useStrings } from './i18n.jsx'
 import Markdown from './Markdown.jsx'
 
 // The part of the file behind a tutor message. It keeps the language and direction of the file.
 export default function SourceSheet({ passages, onClose }) {
+  const he = useStrings()
   return (
     <Drawer title={he.lesson.source} side="start" sheet onClose={onClose}>
       <p className="text-sm text-ink2">{he.lesson.sourceNote}</p>

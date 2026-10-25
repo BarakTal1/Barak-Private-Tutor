@@ -66,6 +66,16 @@ function Probe() {
   )
 }
 
+test('useStrings works without a provider and gives the dictionary of the saved language', () => {
+  localStorage.setItem(KEY, 'en')
+  render(<Probe2 />)
+  expect(screen.getByTestId('bare')).toHaveTextContent(en.appName)
+})
+
+function Probe2() {
+  return <p data-testid="bare">{useStrings().appName}</p>
+}
+
 describe('LanguageProvider', () => {
   test('sets lang and dir on the document at the start', () => {
     render(<LanguageProvider><Probe /></LanguageProvider>)

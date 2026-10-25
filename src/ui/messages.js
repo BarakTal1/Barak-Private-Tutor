@@ -1,10 +1,10 @@
-import { fmt, he } from './he.js'
+import { fmt, he as hebrew } from './he.js'
 
 const MB = 1024 * 1024
 
-// Turns an error into Hebrew text. `action: 'settings'` means the text should offer the settings.
+// Turns an error into text in the language of the dictionary `he`. `action: 'settings'` means the text should offer the settings.
 // It accepts a ParseError, an ApiClientError, or the { code, message } object kept in the lesson state.
-export function describeError(error) {
+export function describeError(error, he = hebrew) {
   const { code, params } = error ?? {}
   if (error?.name === 'ParseError') {
     if (code === 'too_large') {
@@ -27,7 +27,7 @@ export function describeError(error) {
   return api.action ? { title: api.title, action: 'settings' } : { title: api.title }
 }
 
-export function describeWarning({ code, params }) {
+export function describeWarning({ code, params }, he = hebrew) {
   const template = he.warnings[code]
   if (!template) return ''
   const values = { ...params }

@@ -8,7 +8,8 @@ import { useLesson } from '../lesson/LessonProvider.jsx'
 import Button from './Button.jsx'
 import Card from './Card.jsx'
 import ErrorBanner from './ErrorBanner.jsx'
-import { fmt, he } from './he.js'
+import { fmt } from './he.js'
+import { useStrings } from './i18n.jsx'
 import { ArrowStartIcon, CloseIcon, FileIcon, InfoIcon, SlidersIcon, UploadIcon } from './icons.jsx'
 import { describeError } from './messages.js'
 import Screen from './Screen.jsx'
@@ -28,12 +29,13 @@ function StepTitle({ number, children, id }) {
   )
 }
 
-function progressText(progress) {
+function progressText(progress, he) {
   if (progress.stage === 'vision') return fmt(he.setup.readingVision, progress)
   return progress.total > 1 ? fmt(he.setup.readingPages, progress) : he.setup.reading
 }
 
 export default function SetupScreen() {
+  const he = useStrings()
   const { dispatch } = useLesson()
   const { settings, openPanel } = useSettings()
   const [file, setFile] = useState(null)
@@ -155,9 +157,9 @@ export default function SetupScreen() {
               {problem && (
                 <div className="flex flex-col gap-3 rounded-ctl bg-hint-soft p-4 text-hint-ink">
                   <p className="flex items-center gap-2 font-semibold">
-                    <InfoIcon /> {describeError(problem).title}
+                    <InfoIcon /> {describeError(problem, he).title}
                   </p>
-                  <p>{describeError(problem).body}</p>
+                  <p>{describeError(problem, he).body}</p>
                   <Button variant="secondary" onClick={() => input.current.click()} className="min-h-11 self-start px-4 text-base">
                     {he.setup.anotherFile}
                   </Button>
@@ -207,7 +209,7 @@ export default function SetupScreen() {
       {busy && (
         <p className="flex items-center gap-3 text-ink2">
           <Spinner />
-          {progressText(progress)}
+          {progressText(progress, he)}
         </p>
       )}
       {error && <ErrorBanner error={error} onRetry={read} onSettings={openPanel} />}

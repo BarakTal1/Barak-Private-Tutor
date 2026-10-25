@@ -1,11 +1,13 @@
 import { stepCounter } from '../lesson/selectors.js'
-import { fmt, he } from './he.js'
+import { fmt } from './he.js'
+import { useStrings } from './i18n.jsx'
 import { ArrowEndIcon, ListIcon } from './icons.jsx'
 import ProgressPath from './ProgressPath.jsx'
 
 const ICON_BUTTON = 'grid size-11 shrink-0 place-items-center rounded-full bg-surf2 hover:bg-p-soft'
 
 export default function ProgressHeader({ state, onExit, onOutline }) {
+  const he = useStrings()
   const { current, total } = stepCounter(state)
   const step = state.plan.steps[state.progress.currentStepIndex]
   return (

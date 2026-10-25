@@ -2,6 +2,7 @@ import { act, render } from '@testing-library/react'
 import { StrictMode } from 'react'
 import { SettingsProvider } from '../../src/ai/SettingsProvider.jsx'
 import { LessonProvider, useLesson } from '../../src/lesson/LessonProvider.jsx'
+import { LanguageProvider } from '../../src/ui/i18n.jsx'
 import { saveSettings, loadSettings } from '../../src/ai/settings.js'
 import { ingest, plan } from './lesson.js'
 
@@ -21,12 +22,14 @@ export function renderScreen(ui, { key = 'test-key', strict = false, reset = tru
   }
   if (key && reset) saveSettings({ ...loadSettings(), key })
   const tree = (
-    <SettingsProvider>
-      <LessonProvider>
-        <Capture />
-        {ui}
-      </LessonProvider>
-    </SettingsProvider>
+    <LanguageProvider>
+      <SettingsProvider>
+        <LessonProvider>
+          <Capture />
+          {ui}
+        </LessonProvider>
+      </SettingsProvider>
+    </LanguageProvider>
   )
   return render(strict ? <StrictMode>{tree}</StrictMode> : tree)
 }

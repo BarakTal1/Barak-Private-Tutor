@@ -6,6 +6,7 @@ import { transcribePages } from '../../src/ai/client.js'
 import { MAX_FILE_BYTES } from '../../shared/limits.js'
 import App from '../../src/App.jsx'
 import { fmt, he } from '../../src/ui/he.js'
+import { en } from '../../src/ui/en.js'
 import { ingest } from '../helpers/lesson.js'
 import { lessonRef, renderScreen } from '../helpers/render.jsx'
 
@@ -254,5 +255,20 @@ describe('the settings panel', () => {
     await userEvent.click(screen.getByRole('button', { name: he.common.save }))
     await choose(pdf())
     expect(screen.getByText(he.setup.reasonNoModel)).toBeInTheDocument()
+  })
+})
+
+describe('language', () => {
+  test('the setup screen is in English when the saved language is English', () => {
+    localStorage.setItem('tmtf.lang.v1', 'en')
+    renderScreen(<App />, { reset: false })
+    expect(screen.getByText(en.setup.fileStep)).toBeInTheDocument()
+    expect(screen.queryByText(he.setup.fileStep)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: en.setup.next })).toBeInTheDocument()
+  })
+
+  test('the setup screen is in Hebrew by default in the tests', () => {
+    renderScreen(<App />)
+    expect(screen.getByText(he.setup.fileStep)).toBeInTheDocument()
   })
 })

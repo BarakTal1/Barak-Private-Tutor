@@ -1,21 +1,22 @@
 import Chip from './Chip.jsx'
 import Drawer from './Drawer.jsx'
-import { he } from './he.js'
+import { useStrings } from './i18n.jsx'
 import { CheckIcon } from './icons.jsx'
 
-function stateOf(status, isCurrent) {
+function stateOf(status, isCurrent, he) {
   if (status === 'done') return { tone: 'ok', label: he.lesson.outlineDone, icon: <CheckIcon size={16} /> }
   return isCurrent ? { tone: 'primary', label: he.lesson.outlineCurrent } : { tone: 'neutral', label: he.lesson.outlineNext }
 }
 
 // The map of the lesson: every step and where the student is.
 export default function OutlineDrawer({ plan, progress, onClose }) {
+  const he = useStrings()
   return (
     <Drawer title={he.lesson.outline} side="end" onClose={onClose}>
       <ol className="flex flex-col gap-3">
         {plan.steps.map((step, index) => {
           const isCurrent = index === progress.currentStepIndex
-          const { tone, label, icon } = stateOf(progress.steps[index].status, isCurrent)
+          const { tone, label, icon } = stateOf(progress.steps[index].status, isCurrent, he)
           return (
             <li
               key={step.id}

@@ -8,7 +8,7 @@ import ChatMessage from './ChatMessage.jsx'
 import Composer from './Composer.jsx'
 import { directionOf } from './direction.js'
 import ErrorBanner from './ErrorBanner.jsx'
-import { he } from './he.js'
+import { useStrings } from './i18n.jsx'
 import OutlineDrawer from './OutlineDrawer.jsx'
 import ProgressHeader from './ProgressHeader.jsx'
 import SourceSheet from './SourceSheet.jsx'
@@ -39,6 +39,7 @@ function useStepRibbon(stepIndex) {
 }
 
 export default function LessonScreen() {
+  const he = useStrings()
   const { state, dispatch } = useLesson()
   const { openPanel } = useSettings()
   const tutor = useTutor()

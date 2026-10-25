@@ -86,4 +86,7 @@ export function useLanguage() {
 }
 
 // The dictionary of the current language. Components keep the local name `he` for it.
-export const useStrings = () => useContextValue().strings
+// Outside a provider (a small test of one component) it reads the language once, without updates.
+export function useStrings() {
+  return useContext(LanguageContext)?.strings ?? stringsFor(getLanguage())
+}

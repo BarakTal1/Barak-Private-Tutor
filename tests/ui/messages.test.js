@@ -2,6 +2,7 @@ import { ApiClientError } from '../../src/ai/client.js'
 import { ParseError } from '../../src/ingest/errors.js'
 import { describeError, describeWarning } from '../../src/ui/messages.js'
 import { he } from '../../src/ui/he.js'
+import { en } from '../../src/ui/en.js'
 
 describe('describeError for a file', () => {
   test('too_large names the limit in MB', () => {
@@ -62,5 +63,24 @@ describe('describeWarning', () => {
 
   test('an unknown code gives no text', () => {
     expect(describeWarning({ code: 'new_code', params: {} })).toBe('')
+  })
+})
+
+describe('the language of the texts', () => {
+  test('describeError uses the dictionary that it gets', () => {
+    expect(describeError(new ApiClientError('bad_key', 'x'), en).title).toBe(en.apiErrors.bad_key.title)
+    expect(describeError(new ParseError('locked', 'x'), en).title).toBe(en.fileErrors.locked.title)
+    const big = describeError(new ParseError('too_large', 'x', { limit: 25 * 1024 * 1024 }), en)
+    expect(big.body).toBe(en.fileErrors.too_large.body.replace('{size}', '25'))
+  })
+
+  test('describeWarning uses the dictionary that it gets', () => {
+    expect(describeWarning({ code: 'very_short', params: { chars: 5 } }, en)).toBe(
+      en.warnings.very_short.replace('{chars}', '5'),
+    )
+  })
+
+  test('without a dictionary the Hebrew one is used', () => {
+    expect(describeWarning({ code: 'very_short', params: { chars: 5 } })).toBe(he.warnings.very_short.replace('{chars}', '5'))
   })
 })

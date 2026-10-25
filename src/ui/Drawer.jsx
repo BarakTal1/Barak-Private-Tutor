@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef } from 'react'
-import { he } from './he.js'
+import { useStrings } from './i18n.jsx'
 import { CloseIcon } from './icons.jsx'
 
 const DRAWER = {
@@ -16,6 +16,7 @@ const SHEET = {
 // A panel above the page. It closes with Escape, with the close button and with a click outside.
 // The start side is the right in Hebrew and the end side is the left.
 export default function Drawer({ title, side = 'end', sheet = false, footer, onClose, children }) {
+  const he = useStrings()
   const titleId = useId()
   const panel = useRef(null)
   const close = useRef(onClose)

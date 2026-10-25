@@ -3,7 +3,7 @@ import { PROVIDER_PRESETS, applyPreset } from '../ai/settings.js'
 import { useSettings } from '../ai/SettingsProvider.jsx'
 import Button from './Button.jsx'
 import Drawer from './Drawer.jsx'
-import { he } from './he.js'
+import { useStrings } from './i18n.jsx'
 import { EyeIcon, EyeOffIcon, LockIcon } from './icons.jsx'
 
 const FIELD = 'h-12 w-full rounded-ctl bg-surf2 px-4 text-base text-ink ring-1 ring-line placeholder:text-ink2/60'
@@ -42,6 +42,7 @@ function Switch({ checked, onChange, label, hint }) {
 
 // The panel opens from the end side of the page (the left in Hebrew).
 export default function SettingsPanel({ onClose }) {
+  const he = useStrings()
   const { settings, update } = useSettings()
   const [showKey, setShowKey] = useState(false)
   const activePreset = PROVIDER_PRESETS.find((preset) => preset.id === settings.providerId)
