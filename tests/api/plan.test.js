@@ -173,6 +173,10 @@ describe('buildPlanMessages with options', () => {
     expect(system()).toMatch(/teacher buttons[\s\S]*language of the file/i)
   })
 
+  test('the planner may not plan a step about an idea that the file does not contain', () => {
+    expect(system()).toMatch(/do not plan a step[\s\S]*file does not contain/i)
+  })
+
   test('the plan shape has a difficulty', () => {
     expect(system()).toContain('"difficulty": "easy" | "medium" | "challenging"')
   })

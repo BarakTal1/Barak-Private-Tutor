@@ -110,6 +110,60 @@ describe('buildTurnMessages', () => {
     expect(text).toMatch(/lesson language, even when the passages are in another language/i)
   })
 
+  test('the forced explanation asks for the answer and the way to it, and asks no new question', () => {
+    const text = system(build({ forceExplain: true }))
+    expect(text).toMatch(/do not ask a question/i)
+    expect(text).toMatch(/say what the answer is/i)
+    expect(text).toMatch(/show (clearly )?how to get it/i)
+  })
+
+  test.each([
+    ['an answer', { studentMessage: 'three', request: 'answer' }],
+    ['a hint', { studentMessage: null, request: 'hint' }],
+    ['the start of a step', { studentMessage: null, request: 'answer' }],
+  ])('the last message for %s reminds the model of the control line', (name, overrides) => {
+    const last = build(overrides).at(-1)
+    expect(last.role).toBe('user')
+    expect(last.content).toMatch(/finish (your reply )?with the <<STATE/i)
+  })
+
+  test('the last message also reminds the model to use only the passages and to ask at most one question', () => {
+    const text = build({ studentMessage: 'three', request: 'answer' }).at(-1).content
+    expect(text).toMatch(/use only the passages/i)
+    expect(text).toMatch(/at most one question/i)
+  })
+
+  test('the forced explanation ends by saying that the lesson moves on', () => {
+    expect(system(build({ forceExplain: true }))).toMatch(/end with one short sentence[\s\S]*move on/i)
+  })
+
+  test('the tutor may not add facts, analogies or demonstrations that the passages do not contain', () => {
+    expect(system(build())).toMatch(/common knowledge/i)
+    expect(system(build())).toMatch(/demonstration/i)
+  })
+
+  test('the control line says that a follow-up question means no advance', () => {
+    const text = system(build())
+    expect(text).toMatch(/follow-up question[\s\S]*"partial" and advance false/i)
+    expect(text).toMatch(/advance to true[\s\S]*ask no new question/i)
+  })
+
+  test('Hebrew is spoken to the student in plural or neutral forms', () => {
+    expect(system(build())).toMatch(/Hebrew[\s\S]*plural[\s\S]*not masculine singular/i)
+  })
+
+  test('a discouraged student gets care without an emergency warning, and a student in danger gets the strong reply', () => {
+    const text = system(build())
+    expect(text).toMatch(/discouraged[\s\S]*do not mention (an )?emergency/i)
+    expect(text).toMatch(/hurt themselves[\s\S]*trusted adult/i)
+    expect(text).toMatch(/very easy next step/i)
+  })
+
+  test('the difficulty section says how the opening differs', () => {
+    expect(system(build())).toMatch(/challenging[\s\S]*prediction/i)
+    expect(system(build())).toMatch(/easy[\s\S]*everyday example/i)
+  })
+
   test('the prompt contains the forceExplain instruction only when forceExplain is true', () => {
     expect(system(build({ forceExplain: true }))).toMatch(/explain the answer/i)
     expect(system(build({ forceExplain: false }))).not.toMatch(/explain the answer/i)
@@ -118,7 +172,8 @@ describe('buildTurnMessages', () => {
   test('the file text and the student message are inside delimiters', () => {
     const messages = build()
     expect(system(messages)).toMatch(/<<<FILE[\s\S]*A triangle has three sides[\s\S]*FILE>>>/)
-    expect(messages.at(-1)).toEqual({ role: 'user', content: '<<<STUDENT\nthree\nSTUDENT>>>' })
+    expect(messages.at(-1).role).toBe('user')
+    expect(messages.at(-1).content).toMatch(/^<<<STUDENT\nthree\nSTUDENT>>>/)
   })
 
   test('request hint at level 1 and at level 2 gives two different instructions and neither allows the answer', () => {

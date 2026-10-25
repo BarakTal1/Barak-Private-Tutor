@@ -13,6 +13,7 @@ Rules:
 - The lesson language wins over the language of the file. If the teacher names a lesson language and the file is in another language, write the plan in the lesson language and teach the ideas of the file in it. Keep names, quotes and technical terms of the file as they are.
 - Write the plan text (titles, goals, questions, key points) in the lesson language.
 - difficulty is "easy" (smaller steps, simpler words), "medium" or "challenging" (deeper questions). Take it from the teacher text or the teacher buttons. If neither says, use "medium".
+- Do not plan a step about an idea that the file does not contain (for example a proof, a reason or an example that the file does not give). Every step must come from the passages.
 - Each step teaches one small idea. Its checkQuestion is one question that shows whether the student understood it. The question can be answered from the passages of the step.
 - passageIds must be copied from the [id] tags of the file. Use only ids that exist.
 - keyPoints are 1 to 3 short sentences about what the student must understand.
@@ -31,8 +32,9 @@ const HISTORY_MESSAGES = 8
 
 const CONTROL_RULE = `Finish every reply with one last line in exactly this form:
 <<STATE {"verdict": "correct" | "partial" | "wrong" | "off_topic", "advance": true | false}>>
-- correct: the student answered the check question correctly. Set advance to true.
+- correct: the student answered the check question correctly and you are satisfied with the step. Set advance to true, and ask no new question: the next step starts in a new message.
 - partial or wrong: the answer was incomplete or mistaken. Set advance to false.
+- If you ask the student to explain how they got the answer, or any other follow-up question about this step, use "partial" and advance false, even when the answer was right.
 - off_topic: the student wrote something that is not about the lesson. Set advance to false.
 - If the student has not answered yet (you start the step or you answer a hint request), use "partial" and advance false.
 Do not write anything after that line.`
@@ -43,14 +45,17 @@ const HINT_RULES = {
 }
 
 const FORCE_EXPLAIN =
-  'The student has tried several times. Now explain the answer clearly and kindly from the passages, check that it makes sense, and set advance to true.'
+  'The student has tried several times. Now explain the answer. Do not ask a question. Say what the answer is, show clearly how to get it from the passages in 3 to 5 short sentences, be kind and do not blame the student, then end with one short sentence that says that you will now move on, and set advance to true.'
 
 const LAST_STEP = 'This is the last step. After you finish it, add a short recap of the whole lesson in 3 bullet points.'
 
+// Some models forget the last line of a long prompt. The reminder sits at the very end, next to the student message.
+const CONTROL_REMINDER = 'Reply now. Use only the passages. Ask at most one question. Finish your reply with the <<STATE ...>> line.'
+
 function studentTurn({ studentMessage, request }) {
-  if (request === 'hint') return 'The student pressed the Hint button.'
-  if (studentMessage == null) return 'Begin this step now.'
-  return `<<<STUDENT\n${studentMessage}\nSTUDENT>>>`
+  if (request === 'hint') return `The student pressed the Hint button.\n\n${CONTROL_REMINDER}`
+  if (studentMessage == null) return `Begin this step now.\n\n${CONTROL_REMINDER}`
+  return `<<<STUDENT\n${studentMessage}\nSTUDENT>>>\n\n${CONTROL_REMINDER}`
 }
 
 export function buildTurnMessages({
