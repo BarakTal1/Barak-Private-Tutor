@@ -6,6 +6,7 @@ import Button from './Button.jsx'
 import Card from './Card.jsx'
 import Chip from './Chip.jsx'
 import ErrorBanner from './ErrorBanner.jsx'
+import { DEFAULT_OPTIONS } from '../../shared/options.js'
 import { fmt } from './he.js'
 import { useStrings } from './i18n.jsx'
 import { AlertIcon, ArrowEndIcon, ArrowStartIcon, CheckIcon, EyeIcon, InfoIcon } from './icons.jsx'
@@ -45,7 +46,7 @@ export default function ReportScreen() {
   const he = useStrings()
   const { state, dispatch } = useLesson()
   const { settings, openPanel } = useSettings()
-  const { ingest, teacherPrompt } = state
+  const { ingest, teacherPrompt, options = DEFAULT_OPTIONS } = state
   const [planning, setPlanning] = useState(false)
   const [error, setError] = useState(null)
   const slow = useDelayed(planning, SLOW_MS)
@@ -60,6 +61,7 @@ export default function ReportScreen() {
       const plan = await requestPlan({
         settings,
         teacherPrompt,
+        options,
         passages: ingest.passages,
         signal: request.current.signal,
       })

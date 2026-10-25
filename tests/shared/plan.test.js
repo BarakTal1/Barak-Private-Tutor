@@ -28,6 +28,16 @@ function rawStep(overrides = {}) {
   }
 }
 
+describe('validatePlan difficulty', () => {
+  test.each(['easy', 'medium', 'challenging'])('keeps %s', (difficulty) => {
+    expect(validatePlan({ ...rawPlan([rawStep()]), difficulty }, known).plan.difficulty).toBe(difficulty)
+  })
+
+  test.each([undefined, 'hard', 3, null])('%j becomes medium', (difficulty) => {
+    expect(validatePlan({ ...rawPlan([rawStep()]), difficulty }, known).plan.difficulty).toBe('medium')
+  })
+})
+
 describe('validatePlan', () => {
   test('returns a valid plan unchanged', () => {
     const { plan, errors } = validatePlan(rawPlan([rawStep()]), known)

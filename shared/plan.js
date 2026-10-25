@@ -1,4 +1,5 @@
 import { MINUTES_PER_STEP } from './limits.js'
+import { DIFFICULTIES } from './options.js'
 
 const MAX_STEPS = 30
 const DEFAULT_STEPS = 6
@@ -38,6 +39,7 @@ export function validatePlan(raw, knownIds) {
       title: clean(raw.title),
       language: clean(raw.language),
       audience: clean(raw.audience),
+      difficulty: DIFFICULTIES.includes(raw.difficulty) ? raw.difficulty : 'medium',
       estimatedMinutes: minutes > 0 ? minutes : steps.length * MINUTES_PER_STEP,
       steps,
     },

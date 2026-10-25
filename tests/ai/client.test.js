@@ -65,6 +65,13 @@ describe('requests', () => {
     })
   })
 
+  test('requestPlan sends the options of the teacher', async () => {
+    const fetchMock = stubFetch(async () => jsonResponse({ plan }))
+    const options = { minutes: 30, difficulty: 'easy', language: 'en' }
+    await requestPlan({ settings, teacherPrompt: '', options, passages: [{ id: 'p1', label: 'L', text: 'T' }] })
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).options).toEqual(options)
+  })
+
   test('requestPlan sends only the start of each passage when the file is large', async () => {
     const fetchMock = stubFetch(async () => jsonResponse({ plan }))
     const passages = Array.from({ length: 30 }, (_, i) => ({ id: `p${i}`, label: `L${i}`, text: 'x'.repeat(3000) }))

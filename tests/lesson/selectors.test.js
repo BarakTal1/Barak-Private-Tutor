@@ -9,7 +9,7 @@ describe('turnInput', () => {
     const payload = turnInput(lessonState(), null)
     expect(payload).toMatchObject({
       teacherPrompt: 'Be Socratic',
-      plan: { title: 'Triangles', language: 'English', audience: '7th grade' },
+      plan: { title: 'Triangles', language: 'English', audience: '7th grade', difficulty: 'medium' },
       step: plan.steps[0],
       passages: [ingest.passages[0]],
       progress: { stepIndex: 0, total: 3, attempts: 0, hintLevel: 0 },
@@ -20,7 +20,13 @@ describe('turnInput', () => {
   })
 
   test('the plan summary does not carry the steps', () => {
-    expect(turnInput(lessonState(), null).plan).toEqual({ title: 'Triangles', language: 'English', audience: '7th grade' })
+    expect(turnInput(lessonState(), null).plan).toEqual({ title: 'Triangles', language: 'English', audience: '7th grade', difficulty: 'medium' })
+  })
+
+  test('the difficulty of the plan goes to the tutor, and a plan without one counts as medium', () => {
+    const hard = { ...lessonState(), plan: { ...plan, difficulty: 'challenging' } }
+    expect(turnInput(hard, null).plan.difficulty).toBe('challenging')
+    expect(turnInput(lessonState(), null).plan.difficulty).toBe('medium')
   })
 
   test('the begin turn of the next step sees the passages of the new step', () => {

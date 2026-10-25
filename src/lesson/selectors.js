@@ -1,3 +1,4 @@
+import { DIFFICULTIES } from '../../shared/options.js'
 import { shouldForceExplain } from './progress.js'
 
 const HISTORY_MESSAGES = 6
@@ -32,10 +33,10 @@ export function turnInput(state, studentText, request = 'answer') {
     .map((message) => ({ role: message.role, text: message.kind === 'hint' ? HINT_LINE : message.text }))
     .filter((message) => message.text)
     .slice(-HISTORY_MESSAGES)
-  const { title, language, audience } = state.plan
+  const { title, language, audience, difficulty } = state.plan
   return {
     teacherPrompt: state.teacherPrompt,
-    plan: { title, language, audience },
+    plan: { title, language, audience, difficulty: DIFFICULTIES.includes(difficulty) ? difficulty : 'medium' },
     step,
     passages: state.ingest.passages.filter((passage) => step.passageIds.includes(passage.id)),
     progress: {

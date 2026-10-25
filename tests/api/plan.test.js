@@ -102,3 +102,73 @@ describe('buildPlanMessages', () => {
     expect(user).toMatch(/5 steps/)
   })
 })
+
+describe('lesson options', () => {
+  const userMessage = () => complete.mock.calls[0][0].messages.find((m) => m.role === 'user').content
+
+  test('the buttons of the teacher reach the prompt', async () => {
+    complete.mockResolvedValueOnce(JSON.stringify(goodPlan))
+    const res = await call({ options: { minutes: 30, difficulty: 'easy', language: 'en' } })
+    expect(res.statusCode).toBe(200)
+    expect(userMessage()).toContain('Teacher buttons: length 30 minutes; difficulty easy; lesson language English.')
+  })
+
+  test('options that are not valid fall back to the defaults and the request still works', async () => {
+    complete.mockResolvedValueOnce(JSON.stringify(goodPlan))
+    const res = await call({ options: { minutes: 0, difficulty: 'hard', language: 'fr' } })
+    expect(res.statusCode).toBe(200)
+    expect(userMessage()).toContain('length 15 minutes; difficulty medium; lesson language the language of the file')
+  })
+
+  test('a request with no options keeps the old behavior: no buttons line', async () => {
+    complete.mockResolvedValueOnce(JSON.stringify(goodPlan))
+    const res = await call()
+    expect(res.statusCode).toBe(200)
+    expect(userMessage()).not.toContain('Teacher buttons')
+  })
+
+  test('the plan keeps the difficulty that the model returns', async () => {
+    complete.mockResolvedValueOnce(JSON.stringify({ ...goodPlan, difficulty: 'challenging' }))
+    const res = await call({ options: { minutes: 15, difficulty: 'challenging', language: 'he' } })
+    expect(res.payload.plan.difficulty).toBe('challenging')
+  })
+})
+
+describe('buildPlanMessages with options', () => {
+  const user = (args) => buildPlanMessages({ passages, compact: false, ...args }).at(-1).content
+  const system = () => buildPlanMessages({ teacherPrompt: '', passages, compact: false })[0].content
+
+  test('the length of the button sets the number of steps', () => {
+    expect(user({ teacherPrompt: '', options: { minutes: 15, difficulty: 'medium', language: 'en' } })).toMatch(/about 8 steps/)
+    expect(user({ teacherPrompt: '', options: { minutes: 5, difficulty: 'medium', language: 'en' } })).toMatch(/about 3 steps/)
+  })
+
+  test('minutes in the text of the teacher win over the button, in English and in Hebrew', () => {
+    const options = { minutes: 30, difficulty: 'medium', language: 'en' }
+    expect(user({ teacherPrompt: 'under 10 minutes', options })).toMatch(/about 5 steps/)
+    expect(user({ teacherPrompt: 'עד 10 דקות', options })).toMatch(/about 5 steps/)
+  })
+
+  test('the lesson language of a button is named in words', () => {
+    expect(user({ teacherPrompt: '', options: { minutes: 15, difficulty: 'easy', language: 'he' } })).toContain('lesson language Hebrew')
+    expect(user({ teacherPrompt: '', options: { minutes: 15, difficulty: 'easy', language: null } })).toContain('lesson language the language of the file')
+  })
+
+  test('the prompt says that the text of the teacher overrides the buttons', () => {
+    expect(user({ teacherPrompt: 'x', options: { minutes: 15, difficulty: 'easy', language: 'en' } })).toMatch(/text between the TEACHER markers overrides the buttons/i)
+  })
+
+  test('without options the step count and the prompt stay as before', () => {
+    expect(user({ teacherPrompt: '' })).toMatch(/about 6 steps/)
+    expect(user({ teacherPrompt: '' })).not.toContain('Teacher buttons')
+  })
+
+  test('the system prompt says that the lesson language wins over the language of the file', () => {
+    expect(system()).toMatch(/lesson language wins/i)
+    expect(system()).toMatch(/other language/i)
+  })
+
+  test('the plan shape has a difficulty', () => {
+    expect(system()).toContain('"difficulty": "easy" | "medium" | "challenging"')
+  })
+})

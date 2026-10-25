@@ -44,11 +44,12 @@ async function post(path, { settings, body, signal }) {
   return response
 }
 
-export async function requestPlan({ settings, teacherPrompt, passages, signal }) {
+export async function requestPlan({ settings, teacherPrompt, options, passages, signal }) {
   const size = passages.reduce((sum, passage) => sum + passage.text.length, 0)
   const compact = size > COMPACT_THRESHOLD_CHARS
   const body = {
     teacherPrompt,
+    options,
     compact,
     passages: passages.map(({ id, label, text }) => ({ id, label, text: compact ? text.slice(0, COMPACT_CHARS) : text })),
   }

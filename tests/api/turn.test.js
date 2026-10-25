@@ -98,6 +98,18 @@ describe('buildTurnMessages', () => {
   const build = (overrides = {}) => buildTurnMessages({ ...base, request: 'answer', forceExplain: false, ...overrides })
   const system = (messages) => messages[0].content
 
+  test('the context line names the difficulty, and medium is the default', () => {
+    expect(system(build({ plan: { ...base.plan, difficulty: 'easy' } }))).toContain('Difficulty: easy.')
+    expect(system(build({ plan: { ...base.plan, difficulty: undefined } }))).toContain('Difficulty: medium.')
+  })
+
+  test('the tutor prompt explains the three difficulties and the lesson language', () => {
+    const text = system(build())
+    expect(text).toMatch(/# DIFFICULTY/)
+    expect(text).toMatch(/easy[\s\S]*medium[\s\S]*challenging/i)
+    expect(text).toMatch(/lesson language, even when the passages are in another language/i)
+  })
+
   test('the prompt contains the forceExplain instruction only when forceExplain is true', () => {
     expect(system(build({ forceExplain: true }))).toMatch(/explain the answer/i)
     expect(system(build({ forceExplain: false }))).not.toMatch(/explain the answer/i)

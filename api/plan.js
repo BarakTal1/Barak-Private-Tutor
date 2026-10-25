@@ -1,6 +1,7 @@
 import { HttpError, readCall, sendError } from '../server/http.js'
 import { complete } from '../server/llm.js'
 import { buildPlanMessages } from '../server/prompts.js'
+import { normalizeOptions } from '../shared/options.js'
 import { parsePlanJson, repairPassageIds, validatePlan } from '../shared/plan.js'
 
 const ATTEMPTS = 2
@@ -14,9 +15,9 @@ function readPassages(value) {
   return value.map((p) => ({ id: p.id, label: typeof p.label === 'string' ? p.label : '', text: p.text }))
 }
 
-async function buildPlan({ key, provider, teacherPrompt, passages, compact }) {
+async function buildPlan({ key, provider, teacherPrompt, options, passages, compact }) {
   const knownIds = new Set(passages.map((p) => p.id))
-  const messages = buildPlanMessages({ teacherPrompt, passages, compact })
+  const messages = buildPlanMessages({ teacherPrompt, options, passages, compact })
   for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
     const answer = await complete({ key, provider, messages })
     let problem
@@ -41,11 +42,13 @@ export default async function handler(req, res) {
     if (req.method !== 'POST') throw new HttpError(405, 'bad_request', 'Use POST.')
     const call = readCall(req)
     key = call.key
-    const { teacherPrompt, passages, compact } = call.body
+    const { teacherPrompt, options, passages, compact } = call.body
     const plan = await buildPlan({
       key,
       provider: call.provider,
       teacherPrompt: typeof teacherPrompt === 'string' ? teacherPrompt : '',
+      // A request with no options (an old client) keeps the old behavior. Options that are not valid become defaults.
+      options: options === undefined ? undefined : normalizeOptions(options),
       passages: readPassages(passages),
       compact: compact === true,
     })

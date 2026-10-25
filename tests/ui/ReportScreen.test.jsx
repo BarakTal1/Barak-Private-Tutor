@@ -26,9 +26,9 @@ const mixed = {
   ],
 }
 
-function renderReport(ingest = mixed, teacherPrompt = 'Be Socratic') {
+function renderReport(ingest = mixed, teacherPrompt = 'Be Socratic', options) {
   renderScreen(<App />)
-  act(() => lessonRef.current.dispatch({ type: 'ingested', ingest, teacherPrompt }))
+  act(() => lessonRef.current.dispatch({ type: 'ingested', ingest, teacherPrompt, ...(options && { options }) }))
 }
 const start = () => screen.getByRole('button', { name: new RegExp(he.report.start) })
 
@@ -116,6 +116,23 @@ describe('building the lesson plan', () => {
       settings: { key: 'test-key' },
     })
     expect(lessonRef.current.state.plan).toEqual(plan)
+  })
+
+  test('Start lesson sends the options of the teacher', async () => {
+    requestPlan.mockResolvedValue(plan)
+    const options = { minutes: 30, difficulty: 'challenging', language: 'en' }
+    renderReport(mixed, 'Be Socratic', options)
+    await userEvent.click(start())
+    await waitFor(() => expect(lessonRef.current.state.phase).toBe('lesson'))
+    expect(requestPlan.mock.calls[0][0].options).toEqual(options)
+  })
+
+  test('a report without options sends the defaults', async () => {
+    requestPlan.mockResolvedValue(plan)
+    renderReport()
+    await userEvent.click(start())
+    await waitFor(() => expect(lessonRef.current.state.phase).toBe('lesson'))
+    expect(requestPlan.mock.calls[0][0].options).toEqual({ minutes: 15, difficulty: 'medium', language: null })
   })
 
   test('shows the planning state with Barak while the plan is built', async () => {
