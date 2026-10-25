@@ -10,6 +10,9 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createControlFilter } from '../shared/control.js'
+import { invariantViolations } from './checks.mjs'
+import { createJudge, createLlm } from './judge.mjs'
+import { simulateStudent } from './student.mjs'
 import { initialState, reducer } from '../src/lesson/reducer.js'
 import { turnInput } from '../src/lesson/selectors.js'
 import { chunkPassages } from '../src/ingest/passages.js'
@@ -22,6 +25,11 @@ const provider = {
   baseUrl: process.env.EVAL_BASE_URL ?? 'https://generativelanguage.googleapis.com/v1beta/openai',
   model: process.env.EVAL_MODEL ?? 'gemini-3.8-flash',
 }
+
+// The judge and the simulated student use any chat endpoint in the OpenAI format. By default they use the model
+// of the tutor. Set EVAL_JUDGE_MODEL to a stronger model for a stricter judge.
+const JUDGE_MODEL = process.env.EVAL_JUDGE_MODEL ?? provider.model
+const STUDENT_MODEL = process.env.EVAL_STUDENT_MODEL ?? JUDGE_MODEL
 
 if (!KEY) {
   console.error('Set EVAL_KEY to your API key. The app must be running (npm run dev) or BASE_URL must point to it.')
@@ -42,14 +50,15 @@ async function post(path, body) {
 }
 
 // One lesson, driven with the real reducer: the same state changes as in the browser.
-async function startLesson({ fixture, text, teacherPrompt }, transcript) {
+async function startLesson({ fixture, text, teacherPrompt, options }, transcript) {
   const source = text ?? (await readFile(join(here, 'fixtures', fixture), 'utf8'))
   const passages = chunkPassages([{ page: null, label: fixture ?? 'document', text: source }])
-  const { plan } = await (await post('/api/plan', { teacherPrompt, passages, compact: false })).json()
+  const { plan } = await (await post('/api/plan', { teacherPrompt, options, passages, compact: false })).json()
   let state = reducer(initialState(), {
     type: 'ingested',
     ingest: { fileName: fixture ?? 'document', passages, pages: [], warnings: [] },
     teacherPrompt,
+    options,
   })
   state = reducer(state, { type: 'planReady', plan })
 
@@ -74,7 +83,14 @@ async function startLesson({ fixture, text, teacherPrompt }, transcript) {
 
   const session = {
     get state() {
-      return { ...state, passages }
+      return { ...state, passages, source }
+    },
+    // The conversation as plain text, for a judge. The plan is left out.
+    text() {
+      return transcript
+        .filter((entry) => entry.role !== 'plan')
+        .map((entry) => `${entry.role === 'tutor' ? 'Tutor' : 'Student'}: ${entry.text}`)
+        .join('\n\n')
     },
     begin: () => turn(null, 'answer'),
     answer(text) {
@@ -108,7 +124,7 @@ function transcriptFile(scenario, result, transcript, notes) {
     `- Scenario: \`${scenario.id}\``,
     `- Pass condition: ${scenario.pass}`,
     `- Result: **${result.ok ? 'PASS' : 'FAIL'}** — ${result.why}`,
-    `- Model: \`${provider.model}\` · ${new Date().toISOString().slice(0, 10)}`,
+    `- Model: \`${provider.model}\` · judge: \`${JUDGE_MODEL}\` · ${new Date().toISOString().slice(0, 10)}`,
     '',
   ]
   for (const entry of transcript) {
@@ -119,9 +135,14 @@ function transcriptFile(scenario, result, transcript, notes) {
   return `${lines.join('\n')}\n`
 }
 
+const llm = createLlm({ baseUrl: provider.baseUrl, key: KEY })
+const judge = createJudge({ llm, model: JUDGE_MODEL })
+
 const only = process.argv.slice(2)
 const chosen = only.length ? scenarios.filter((scenario) => only.includes(scenario.id)) : scenarios
-await mkdir(join(here, 'transcripts'), { recursive: true })
+// Each model has its own folder, so a new run does not overwrite the transcripts of another model.
+const outDir = join(here, 'transcripts', provider.model.replace(/[^\w.-]/g, '_'))
+await mkdir(outDir, { recursive: true })
 let failed = 0
 
 for (const scenario of chosen) {
@@ -131,6 +152,8 @@ for (const scenario of chosen) {
     startLesson: (options) => startLesson(options, transcript),
     transcribe: (file) => transcribe(file, transcript),
     note: (text) => notes.push(text),
+    judge,
+    student: (profile, step, tutorMessage) => simulateStudent({ llm, model: STUDENT_MODEL, profile, step, tutorMessage }),
   }
   let result
   try {
@@ -138,10 +161,15 @@ for (const scenario of chosen) {
   } catch (err) {
     result = { ok: false, why: `The scenario stopped: ${err.message}` }
   }
+  // Rules for every message of the tutor, in every scenario.
+  const broken = transcript
+    .filter((entry) => entry.role === 'tutor')
+    .flatMap((entry, index) => invariantViolations(entry).map((rule) => `message ${index + 1}: ${rule}`))
+  if (broken.length) result = { ok: false, why: `${result.why} Rules for every message were broken (${broken.join('; ')}).` }
   if (!result.ok) failed += 1
-  await writeFile(join(here, 'transcripts', `${scenario.id}.md`), transcriptFile(scenario, result, transcript, notes))
+  await writeFile(join(outDir, `${scenario.id}.md`), transcriptFile(scenario, result, transcript, notes))
   console.log(`${result.ok ? 'PASS' : 'FAIL'}  ${scenario.id}  ${result.why}`)
 }
 
-console.log(`\n${chosen.length - failed} of ${chosen.length} scenarios passed. Transcripts are in eval/transcripts/.`)
+console.log(`\n${chosen.length - failed} of ${chosen.length} scenarios passed. Transcripts are in ${outDir}.`)
 process.exit(failed ? 1 : 0)
