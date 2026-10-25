@@ -54,7 +54,7 @@ On your own computer you can also use a model server that runs locally (for exam
 npm test
 ```
 
-The 802 tests do not call a real model. The scenarios that check the behavior of the tutor with a real model are in [DECISIONS.md](DECISIONS.md) and run with `npm run eval` (see `eval/`). The eval needs a key in `EVAL_KEY`. It uses a judge model and a simulated student, so one run makes about 100 to 150 calls. Example: `EVAL_BASE_URL=https://api.anthropic.com/v1 EVAL_MODEL=claude-haiku-5-5 EVAL_JUDGE_MODEL=claude-sonnet-5-5 npm run eval`.
+The 847 tests do not call a real model. The scenarios that check the behavior of the tutor with a real model are in [DECISIONS.md](DECISIONS.md) and run with `npm run eval` (see `eval/`). The eval needs a key in `EVAL_KEY`. It uses a judge model and a simulated student, so one run makes about 100 to 150 calls. Example: `EVAL_BASE_URL=https://api.anthropic.com/v1 EVAL_MODEL=claude-haiku-5-5 EVAL_JUDGE_MODEL=claude-sonnet-5-5 npm run eval`.
 
 ## Deploy to Vercel
 
