@@ -272,3 +272,43 @@ describe('language', () => {
     expect(screen.getByText(he.setup.fileStep)).toBeInTheDocument()
   })
 })
+
+describe('lesson options', () => {
+  async function goOn() {
+    ingestFile.mockResolvedValue(ingest)
+    await choose(pdf())
+    await userEvent.click(continueButton())
+    await waitFor(() => expect(lessonRef.current.state.phase).toBe('report'))
+    return lessonRef.current.state
+  }
+
+  test('with no change the defaults go on: 15 minutes, medium and the app language', async () => {
+    renderScreen(<App />)
+    const state = await goOn()
+    expect(state.options).toEqual({ minutes: 15, difficulty: 'medium', language: 'he' })
+  })
+
+  test('the chosen buttons go on, with the trimmed extra text', async () => {
+    renderScreen(<App />)
+    await userEvent.click(screen.getByRole('radio', { name: fmt(he.setup.options.lengthChoice, { n: 30 }) }))
+    await userEvent.click(screen.getByRole('radio', { name: he.setup.options.challenging }))
+    await userEvent.click(screen.getByRole('radio', { name: 'English' }))
+    await userEvent.type(screen.getByLabelText(he.setup.promptLabel), '  use examples  ')
+    const state = await goOn()
+    expect(state.options).toEqual({ minutes: 30, difficulty: 'challenging', language: 'en' })
+    expect(state.teacherPrompt).toBe('use examples')
+  })
+
+  test('with the English toggle the untouched language row shows English', () => {
+    localStorage.setItem('tmtf.lang.v1', 'en')
+    renderScreen(<App />, { reset: false })
+    expect(screen.getByRole('radio', { name: 'English', checked: true })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: 'עברית', checked: false })).toBeInTheDocument()
+  })
+
+  test('the example button fills the box with the example of the current language', async () => {
+    renderScreen(<App />)
+    await userEvent.click(screen.getByRole('button', { name: he.setup.tryExample }))
+    expect(screen.getByLabelText(he.setup.promptLabel)).toHaveValue(he.setup.promptExample)
+  })
+})

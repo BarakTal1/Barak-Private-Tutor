@@ -263,3 +263,26 @@ describe('off topic', () => {
     expect(state.parkedQuestions).toEqual(['q1', 'q2', 'q3'])
   })
 })
+
+describe('lesson options', () => {
+  const ingested = (options) => reducer(initialState(), { type: 'ingested', ingest, teacherPrompt: 'x', ...(options && { options }) })
+
+  test('ingested keeps the options of the teacher', () => {
+    const options = { minutes: 30, difficulty: 'easy', language: 'en' }
+    expect(ingested(options).options).toEqual(options)
+  })
+
+  test('ingested without options gives the defaults', () => {
+    expect(ingested().options).toEqual({ minutes: 15, difficulty: 'medium', language: null })
+  })
+
+  test('ingested cleans options that are not valid', () => {
+    expect(ingested({ minutes: 7, difficulty: 'hard', language: 'fr' }).options).toEqual({ minutes: 15, difficulty: 'medium', language: null })
+  })
+
+  test('a new file resets the options', () => {
+    const first = ingested({ minutes: 5, difficulty: 'easy', language: 'he' })
+    const second = reducer(first, { type: 'ingested', ingest, teacherPrompt: '' })
+    expect(second.options.minutes).toBe(15)
+  })
+})

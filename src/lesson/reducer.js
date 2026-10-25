@@ -8,6 +8,7 @@ import {
   shouldForceExplain,
   undoAnswer,
 } from './progress.js'
+import { DEFAULT_OPTIONS, normalizeOptions } from '../../shared/options.js'
 
 const MAX_PARKED_QUESTIONS = 3
 
@@ -15,6 +16,7 @@ export const initialState = () => ({
   phase: 'setup',
   fileName: '',
   teacherPrompt: '',
+  options: DEFAULT_OPTIONS,
   ingest: null,
   plan: null,
   progress: null,
@@ -100,6 +102,7 @@ export function reducer(state, action) {
         ingest: action.ingest,
         fileName: action.ingest.fileName,
         teacherPrompt: action.teacherPrompt,
+        options: normalizeOptions(action.options),
       }
     case 'planReady':
       return {

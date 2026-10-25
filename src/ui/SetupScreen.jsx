@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { MAX_FILE_BYTES } from '../../shared/limits.js'
+import { DEFAULT_OPTIONS } from '../../shared/options.js'
 import { transcribePages } from '../ai/client.js'
 import { useSettings } from '../ai/SettingsProvider.jsx'
 import { ParseError } from '../ingest/errors.js'
@@ -9,7 +10,8 @@ import Button from './Button.jsx'
 import Card from './Card.jsx'
 import ErrorBanner from './ErrorBanner.jsx'
 import { fmt } from './he.js'
-import { useStrings } from './i18n.jsx'
+import { useLanguage, useStrings } from './i18n.jsx'
+import LessonOptions from './LessonOptions.jsx'
 import { ArrowStartIcon, CloseIcon, FileIcon, InfoIcon, SlidersIcon, UploadIcon } from './icons.jsx'
 import LanguageToggle from './LanguageToggle.jsx'
 import { describeError } from './messages.js'
@@ -42,6 +44,8 @@ export default function SetupScreen() {
   const [file, setFile] = useState(null)
   const [problem, setProblem] = useState(null)
   const [prompt, setPrompt] = useState('')
+  const [options, setOptions] = useState(DEFAULT_OPTIONS)
+  const { language } = useLanguage()
   const [dragging, setDragging] = useState(false)
   const [progress, setProgress] = useState(null)
   const [error, setError] = useState(null)
@@ -77,7 +81,7 @@ export default function SetupScreen() {
         transcribe: (pages) => transcribePages({ settings, pages }),
         onProgress: setProgress,
       })
-      dispatch({ type: 'ingested', ingest, teacherPrompt: prompt.trim() })
+      dispatch({ type: 'ingested', ingest, teacherPrompt: prompt.trim(), options: { ...options, language: options.language ?? language } })
     } catch (err) {
       setError(err)
       setProgress(null)
@@ -196,7 +200,8 @@ export default function SetupScreen() {
             {he.setup.tryExample}
           </button>
         </div>
-        <label htmlFor="teacher-prompt" className="sr-only">
+        <LessonOptions value={options} onChange={setOptions} appLanguage={language} />
+        <label htmlFor="teacher-prompt" className="text-sm font-medium text-ink2">
           {he.setup.promptLabel}
         </label>
         <textarea
