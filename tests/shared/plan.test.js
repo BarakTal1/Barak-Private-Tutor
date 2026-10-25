@@ -139,3 +139,17 @@ describe('parsePlanJson', () => {
     expect(() => parsePlanJson('sorry, I cannot')).toThrow()
   })
 })
+
+describe('minutesFromPrompt', () => {
+  test.each([
+    ['20 minutes', 20],
+    ['עד 45 דקות', 45],
+    ['שיעור של 10 דקה', 10],
+    ['20 דק׳', 20],
+    ["20 דק'", 20],
+    ['teach 7th grade', null],
+    ['', null],
+  ])('%s gives %s', (text, minutes) => {
+    expect(minutesFromPrompt(text)).toBe(minutes)
+  })
+})

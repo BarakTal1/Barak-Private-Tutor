@@ -168,6 +168,11 @@ describe('buildPlanMessages with options', () => {
     expect(system()).toMatch(/other language/i)
   })
 
+  test('an empty teacher text does not make the file language win over the buttons', () => {
+    expect(system()).not.toMatch(/If it is empty/)
+    expect(system()).toMatch(/teacher buttons[\s\S]*language of the file/i)
+  })
+
   test('the plan shape has a difficulty', () => {
     expect(system()).toContain('"difficulty": "easy" | "medium" | "challenging"')
   })

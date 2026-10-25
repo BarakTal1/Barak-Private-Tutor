@@ -78,7 +78,7 @@ export function stepCountFor(minutes) {
 }
 
 export function minutesFromPrompt(prompt) {
-  const match = /(\d{1,3})\s*(?:minutes?|mins?|דקות|דקה)/iu.exec(prompt ?? '')
+  const match = /(\d{1,3})\s*(?:minutes?|mins?|דקות|דקה|דק[׳'])/iu.exec(prompt ?? '')
   return match ? Number(match[1]) : null
 }
 

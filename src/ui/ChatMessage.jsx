@@ -1,5 +1,5 @@
 import Button from './Button.jsx'
-import { useStrings } from './i18n.jsx'
+import { useDirection, useStrings } from './i18n.jsx'
 import HintLamps from './HintLamps.jsx'
 import { ArrowStartIcon, BookIcon, BulbIcon } from './icons.jsx'
 import Markdown from './Markdown.jsx'
@@ -19,10 +19,11 @@ function avatarMood({ message, isLast, streaming }) {
   return AVATAR[message.mood] ?? 'still'
 }
 
-// The words of the interface (a hint title, "waiting...") are Hebrew, whatever the lesson language is.
+// The words of the interface (a hint title, "waiting...") follow the language of the interface,
+// whatever the lesson language is.
 function BubbleTitle({ children }) {
   return (
-    <p dir="rtl" className="mb-2 flex items-center gap-2 font-bold">
+    <p dir={useDirection()} className="mb-2 flex items-center gap-2 font-bold">
       {children}
     </p>
   )

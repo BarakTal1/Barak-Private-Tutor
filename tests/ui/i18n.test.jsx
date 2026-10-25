@@ -1,7 +1,7 @@
 import { act, render, screen } from '@testing-library/react'
 import { he } from '../../src/ui/he.js'
 import { en } from '../../src/ui/en.js'
-import { LanguageProvider, getLanguage, stringsFor, useLanguage, useStrings } from '../../src/ui/i18n.jsx'
+import { LanguageProvider, getLanguage, stringsFor, useDirection, useLanguage, useStrings } from '../../src/ui/i18n.jsx'
 
 const KEY = 'tmtf.lang.v1'
 
@@ -116,4 +116,14 @@ describe('LanguageProvider', () => {
     localStorage.setItem(KEY, 'he')
     expect(getLanguage()).toBe('he')
   })
+})
+
+function DirProbe() {
+  return <p data-testid="dir">{useDirection()}</p>
+}
+
+test('useDirection gives the direction of the saved language, also without a provider', () => {
+  localStorage.setItem(KEY, 'en')
+  render(<DirProbe />)
+  expect(screen.getByTestId('dir')).toHaveTextContent('ltr')
 })

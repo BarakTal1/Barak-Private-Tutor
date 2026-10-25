@@ -35,7 +35,7 @@ function Switch({ checked, onChange, label, hint }) {
         <span className="text-sm text-ink2">{hint}</span>
       </span>
       <span aria-hidden="true" className={`flex h-7 w-12 shrink-0 items-center rounded-full p-1 transition-colors duration-160 ${checked ? 'bg-p' : 'bg-line-strong'}`}>
-        <span className={`size-5 rounded-full bg-surf shadow transition-transform duration-160 ${checked ? '-translate-x-5' : ''}`} />
+        <span className={`size-5 rounded-full bg-surf shadow transition-transform duration-160 ${checked ? 'ltr:translate-x-5 rtl:-translate-x-5' : ''}`} />
       </span>
     </button>
   )

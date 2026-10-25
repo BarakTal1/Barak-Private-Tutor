@@ -126,9 +126,11 @@
 @keyframes tt-spark { 0%, 100% { opacity: 0; transform: scale(0.4) } 50% { opacity: 1; transform: scale(1) } }
 
 /* The settings panel sits at the end side. In Hebrew that is the left, so it slides in from there. */
-@keyframes slide-in-end { from { transform: translateX(-100%) } }
+@keyframes slide-in-end { from { transform: translateX(calc(-100% * var(--dir-sign, 1))) } }
 @keyframes fade-in { from { opacity: 0 } }
-@keyframes slide-in-start { from { transform: translateX(100%) } }
+@keyframes slide-in-start { from { transform: translateX(calc(100% * var(--dir-sign, 1))) } }
+/* The slide keyframes above are written for right to left. In left to right they run the other way. */
+:root[dir='ltr'] { --dir-sign: -1 }
 @keyframes sheet-up { from { transform: translateY(100%) } }
 @keyframes pop { from { opacity: 0; transform: scale(0.85) } to { opacity: 1; transform: scale(1) } }
 @keyframes pulse-ring { 0% { opacity: 0.6; transform: scale(1) } 100% { opacity: 0; transform: scale(1.9) } }

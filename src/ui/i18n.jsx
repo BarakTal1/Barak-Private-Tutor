@@ -85,6 +85,11 @@ export function useLanguage() {
   return { language, setLanguage, dir }
 }
 
+// The direction of the current language: 'rtl' or 'ltr'. It works without a provider, like useStrings.
+export function useDirection() {
+  return useContext(LanguageContext)?.dir ?? DIRECTIONS[getLanguage()]
+}
+
 // The dictionary of the current language. Components keep the local name `he` for it.
 // Outside a provider (a small test of one component) it reads the language once, without updates.
 export function useStrings() {
