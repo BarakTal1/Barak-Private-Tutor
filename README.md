@@ -23,7 +23,7 @@ The interface is in Hebrew and runs right to left. The lesson is in Hebrew for n
 | Documents and slides | PDF, DOCX, PPTX, XLSX, EPUB, ODT, ODP, ODS | Read in the browser. Tables stay as tables. |
 | Images and scans | JPG, PNG, WEBP, GIF, BMP, HEIC, and scanned PDF pages | Sent to the vision model of your provider |
 
-A page with bad text (a scan, broken fonts, reversed Hebrew) is sent to the vision model. A file that cannot be read gets a clear message. Old `.doc`, `.ppt`, `.xls` files, audio, video and ZIP files are not supported yet.
+A page with bad text (a scan, broken fonts, reversed Hebrew) is sent to the vision model. A PDF page that is mostly one picture is a scan. If it has only a short text (a stamp such as "Scanned with CamScanner"), it is sent to the vision model. If it has a long text layer, the layer is compared with the picture, and the text of the model replaces a layer that does not match. PDF pages are drawn at 150 dpi. A file that cannot be read gets a clear message. Old `.doc`, `.ppt`, `.xls` files, audio, video and ZIP files are not supported yet.
 
 Limits: 25 MB for a file, 100 pages of text, and 20 pages through the vision model. The page shows the limits.
 

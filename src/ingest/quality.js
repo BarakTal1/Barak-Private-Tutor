@@ -31,3 +31,39 @@ export function scorePage(text) {
 
   return { score: Math.min(1, compact.length / FULL_SCORE_CHARS) * (1 - garbled), needsVision: false, reason: 'ok' }
 }
+
+// A page that is mostly one picture is a scan. Its text, if any, is a layer that a scanner app added.
+const SCAN_COVERAGE = 0.5
+// A stamp or a page number is short. The text layer of a real scanned page is longer.
+const SCAN_LAYER_CHARS = 150
+const AGREE_SHARE = 0.6
+
+// Like scorePage, for a pdf page. `imageCoverage` is the share of the page that pictures cover (0 to 1).
+// A scan with a short text layer (a stamp, a page number) goes to vision, because the text is not the page.
+// A scan with a long text layer is trusted, but `check` asks for a look at the picture to compare.
+export function scorePdfPage(text, imageCoverage) {
+  const result = scorePage(text)
+  if (result.needsVision || imageCoverage < SCAN_COVERAGE) return result
+  const chars = text.replace(/\s/g, '').length
+  if (chars < SCAN_LAYER_CHARS) return poor('image_page')
+  return { ...result, check: true }
+}
+
+const words = (text) =>
+  new Set(
+    text
+      .toLowerCase()
+      .replace(/[֑-ׇ]/g, '')
+      .split(/[^\p{L}\p{N}]+/u)
+      .filter((word) => word.length > 1),
+  )
+
+// Tells if the text layer of a scan has the same words as the text that the model read from the picture.
+// Small differences are normal. An answer with no words decides nothing.
+export function layerAgrees(layerText, visionText) {
+  const layer = words(layerText)
+  const vision = words(visionText)
+  if (!vision.size) return true
+  const shared = [...layer].filter((word) => vision.has(word)).length
+  return (2 * shared) / (layer.size + vision.size) >= AGREE_SHARE
+}

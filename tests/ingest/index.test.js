@@ -217,3 +217,86 @@ describe('long pdf and progress', () => {
     expect(stages).toContain('vision')
   })
 })
+
+describe('checking a text layer of a scan', () => {
+  const layer = 'The layer says that a triangle has three sides and the three angles add up to one hundred eighty degrees.'
+  const checked = (number, text = layer) => ({ ...pdfPage(number, { text }), check: true })
+  const answer = (text) => vi.fn(async (pages) => pages.map(({ page }) => ({ page, text })))
+
+  test('a layer that matches the picture is kept and is not reported', async () => {
+    readPdf.mockResolvedValue({ pages: [checked(1)], totalPages: 1 })
+    const transcribe = answer(`${layer}\n`)
+    const result = await run(pdfFile(), { transcribe })
+    expect(transcribe).toHaveBeenCalledTimes(1)
+    expect(result.pages).toEqual([{ page: 1, method: 'text' }])
+    expect(result.passages[0]).toMatchObject({ source: 'text', text: layer })
+    expect(result.warnings).toEqual([])
+  })
+
+  test('a layer that does not match the picture is replaced by the text of the model, with a warning', async () => {
+    const wrong = 'The leyer sals that a trianqle hos thrae sidez and tho thrae anglez ald op to ona hundrad'
+    readPdf.mockResolvedValue({ pages: [checked(1, wrong)], totalPages: 1 })
+    const result = await run(pdfFile(), { transcribe: answer(layer) })
+    expect(result.pages).toEqual([{ page: 1, method: 'vision', note: 'layer_replaced' }])
+    expect(result.passages[0]).toMatchObject({ source: 'vision', text: layer })
+    expect(result.warnings).toContainEqual({ code: 'text_layer_replaced', params: { pages: [1] } })
+  })
+
+  test('pages that need vision and pages to check go to the model in one set of batches', async () => {
+    readPdf.mockResolvedValue({ pages: [scanned(1), checked(2), pdfPage(3)], totalPages: 3 })
+    const transcribe = vi.fn(async (pages) =>
+      pages.map(({ page }) => ({ page, text: page === 2 ? layer : `Transcribed text of page ${page}. It is long.` })),
+    )
+    const result = await run(pdfFile(), { transcribe })
+    expect(transcribe.mock.calls.map(([pages]) => pages.map((p) => p.page))).toEqual([[1, 2]])
+    expect(result.pages.map((p) => p.method)).toEqual(['vision', 'text', 'text'])
+  })
+
+  test('with vision off the layer is kept and the report says it was not checked', async () => {
+    readPdf.mockResolvedValue({ pages: [checked(1)], totalPages: 1 })
+    const transcribe = transcribeAll()
+    const result = await run(pdfFile(), { provider: noVision, transcribe })
+    expect(transcribe).not.toHaveBeenCalled()
+    expect(result.passages[0]).toMatchObject({ source: 'text', text: layer })
+    expect(result.warnings).toEqual([{ code: 'text_layer_unchecked', params: { pages: [1] } }])
+  })
+
+  test('a model without vision keeps the layer and the report says it was not checked', async () => {
+    readPdf.mockResolvedValue({ pages: [checked(1)], totalPages: 1 })
+    const transcribe = vi.fn(async () => {
+      throw Object.assign(new Error('no vision'), { code: 'no_vision' })
+    })
+    const result = await run(pdfFile(), { transcribe })
+    expect(result.pages).toEqual([{ page: 1, method: 'text' }])
+    expect(result.warnings).toEqual([{ code: 'text_layer_unchecked', params: { pages: [1] } }])
+  })
+
+  test('an empty answer of the model keeps the layer', async () => {
+    readPdf.mockResolvedValue({ pages: [checked(1)], totalPages: 1 })
+    const result = await run(pdfFile(), { transcribe: answer('  ') })
+    expect(result.pages).toEqual([{ page: 1, method: 'text' }])
+    expect(result.passages[0].text).toBe(layer)
+  })
+
+  test('a page that cannot be drawn keeps the layer', async () => {
+    const page = checked(1)
+    page.render = vi.fn(async () => {
+      throw new ParseError('corrupt', 'bad page')
+    })
+    readPdf.mockResolvedValue({ pages: [page], totalPages: 1 })
+    const result = await run(pdfFile(), { transcribe: transcribeAll() })
+    expect(result.pages).toEqual([{ page: 1, method: 'text' }])
+    expect(result.passages[0].text).toBe(layer)
+  })
+
+  test('pages that need vision come first when the page limit is reached', async () => {
+    const pages = [...Array.from({ length: MAX_VISION_PAGES }, (_, i) => scanned(i + 1)), checked(MAX_VISION_PAGES + 1)]
+    readPdf.mockResolvedValue({ pages, totalPages: pages.length })
+    const transcribe = transcribeAll()
+    const result = await run(pdfFile(), { transcribe })
+    const sent = transcribe.mock.calls.flatMap(([batch]) => batch.map((p) => p.page))
+    expect(sent).not.toContain(MAX_VISION_PAGES + 1)
+    expect(result.pages.at(-1)).toEqual({ page: MAX_VISION_PAGES + 1, method: 'text' })
+    expect(result.warnings).toContainEqual({ code: 'text_layer_unchecked', params: { pages: [MAX_VISION_PAGES + 1] } })
+  })
+})

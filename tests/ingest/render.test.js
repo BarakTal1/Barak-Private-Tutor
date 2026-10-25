@@ -22,6 +22,12 @@ test('scales the longest side down to MAX_IMAGE_SIDE and keeps the ratio', async
   expect(draw).toHaveBeenCalledWith(context, MAX_IMAGE_SIDE, 900)
 })
 
+test('uses the maxSide option instead of MAX_IMAGE_SIDE', async () => {
+  const draw = vi.fn()
+  await toJpegDataUrl(4000, 3000, draw, { maxSide: 2000 })
+  expect(draw).toHaveBeenCalledWith(context, 2000, 1500)
+})
+
 test('does not scale a small image up', async () => {
   const draw = vi.fn()
   await toJpegDataUrl(300, 200, draw)

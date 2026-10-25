@@ -48,3 +48,26 @@ test('onProgress is called for each page', async () => {
   await open('text.pdf', { onProgress })
   expect(onProgress.mock.calls).toEqual([[1, 2], [2, 2]])
 })
+
+describe('scans with a text layer', () => {
+  test('a full-page picture with only a short stamp needs vision', async () => {
+    const { pages } = await open('scan-stamp.pdf')
+    expect(pages[0].text).toContain('CamScanner')
+    expect(pages[0].needsVision).toBe(true)
+  })
+
+  test('a full-page picture with a long text layer is trusted but marked for a check', async () => {
+    const { pages } = await open('scan-ocr-layer.pdf')
+    expect(pages[0]).toMatchObject({ needsVision: false, check: true })
+  })
+
+  test('a page of text has no check mark', async () => {
+    const { pages } = await open('text.pdf')
+    expect(pages.map((p) => Boolean(p.check))).toEqual([false, false])
+  })
+
+  test('the small picture of the old image-only test file does not change its result', async () => {
+    const { pages } = await open('scan.pdf')
+    expect(pages.every((p) => p.needsVision)).toBe(true)
+  })
+})

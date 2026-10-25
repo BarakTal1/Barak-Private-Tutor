@@ -4,6 +4,7 @@ import { readImage } from './image.js'
 import { detectKind } from './kind.js'
 import { readOfficeFile } from './office.js'
 import { chunkPassages } from './passages.js'
+import { layerAgrees } from './quality.js'
 import { readPdf } from './pdf.js'
 import { readTextFile } from './text.js'
 
@@ -19,30 +20,45 @@ function readPages(file, { tier, kind }, onProgress) {
 const skipped = (note) => ({ method: 'skipped', note })
 
 // Pages whose text can be trusted use it. The other pages are drawn and sent to the vision model.
+// A scan with a long text layer (`check`) is trusted too, but it is also sent to the model while there is room.
+// When the model reads other words than the layer, the layer is wrong and the text of the model is used.
 // Every page ends as text, vision, skipped or failed, so the report can tell the teacher what happened.
 async function routePages(entries, { provider, transcribe, onProgress }) {
   const results = new Map()
   const warnings = []
   const poor = []
+  const checks = []
   for (const entry of entries) {
     if (entry.needsVision) poor.push(entry)
-    else results.set(entry.number, { method: 'text', text: entry.text })
+    else {
+      results.set(entry.number, { method: 'text', text: entry.text })
+      if (entry.check) checks.push(entry)
+    }
   }
   const numbers = (list) => list.map((entry) => entry.number)
+  const checked = new Set()
+  const warnUnchecked = () => {
+    const rest = checks.filter((entry) => !checked.has(entry.number))
+    if (rest.length) warnings.push({ code: 'text_layer_unchecked', params: { pages: numbers(rest) } })
+  }
 
   if (!provider.vision) {
     for (const entry of poor) results.set(entry.number, skipped('vision_off'))
     if (poor.length) warnings.push({ code: 'vision_off', params: { pages: numbers(poor) } })
+    warnUnchecked()
     return { results, warnings }
   }
 
-  const toSend = poor.slice(0, MAX_VISION_PAGES)
-  const overLimit = poor.slice(MAX_VISION_PAGES)
+  // Pages that have no text come first, so that a long file does not use the limit on checks.
+  const queue = [...poor, ...checks]
+  const toSend = queue.slice(0, MAX_VISION_PAGES)
+  const overLimit = poor.filter((entry) => !toSend.includes(entry))
   for (const entry of overLimit) results.set(entry.number, skipped('vision_capped'))
   if (overLimit.length) {
     warnings.push({ code: 'vision_capped', params: { limit: MAX_VISION_PAGES, skipped: overLimit.length } })
   }
 
+  const replaced = []
   for (let start = 0; start < toSend.length; start += VISION_BATCH_PAGES) {
     const batch = toSend.slice(start, start + VISION_BATCH_PAGES)
     onProgress({ stage: 'vision', done: start, total: toSend.length })
@@ -52,7 +68,7 @@ async function routePages(entries, { provider, transcribe, onProgress }) {
         drawn.push({ page: entry.number, image: await entry.render() })
       } catch (err) {
         if (!(err instanceof ParseError)) throw err
-        results.set(entry.number, { method: 'failed', note: 'render' })
+        if (!entry.check) results.set(entry.number, { method: 'failed', note: 'render' })
       }
     }
     if (!drawn.length) continue
@@ -63,15 +79,26 @@ async function routePages(entries, { provider, transcribe, onProgress }) {
       if (err?.code !== 'no_vision') throw err
       const rest = toSend.slice(start).filter((entry) => !results.has(entry.number))
       for (const entry of rest) results.set(entry.number, skipped('no_vision_model'))
-      warnings.push({ code: 'no_vision_model', params: { pages: numbers(rest) } })
+      if (rest.length) warnings.push({ code: 'no_vision_model', params: { pages: numbers(rest) } })
       break
     }
     for (const { page } of drawn) {
       const text = answers.find((answer) => answer.page === page)?.text ?? ''
-      results.set(page, text.trim() ? { method: 'vision', text } : { method: 'failed', note: 'empty' })
+      const entry = toSend.find((candidate) => candidate.number === page)
+      if (!entry.check) {
+        results.set(page, text.trim() ? { method: 'vision', text } : { method: 'failed', note: 'empty' })
+      } else if (text.trim()) {
+        checked.add(page)
+        if (!layerAgrees(entry.text, text)) {
+          results.set(page, { method: 'vision', text, note: 'layer_replaced' })
+          replaced.push(page)
+        }
+      }
     }
   }
   onProgress({ stage: 'vision', done: toSend.length, total: toSend.length })
+  if (replaced.length) warnings.push({ code: 'text_layer_replaced', params: { pages: replaced } })
+  warnUnchecked()
   return { results, warnings }
 }
 

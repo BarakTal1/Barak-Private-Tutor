@@ -37,7 +37,7 @@ test('every parse error code and unsupported reason has a title and a body', () 
 })
 
 test('every warning code and API error code has a text', () => {
-  for (const code of ['rows_capped', 'columns_capped', 'pages_capped', 'vision_off', 'vision_capped', 'no_vision_model', 'very_short']) {
+  for (const code of ['rows_capped', 'columns_capped', 'pages_capped', 'vision_off', 'vision_capped', 'no_vision_model', 'text_layer_replaced', 'text_layer_unchecked', 'very_short']) {
     expect(he.warnings[code], code).toBeTruthy()
   }
   for (const code of ['bad_key', 'overloaded', 'rate_limited', 'no_vision', 'network', 'timeout', 'too_large', 'bad_request', 'provider_error']) {

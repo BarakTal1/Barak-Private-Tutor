@@ -31,6 +31,24 @@ def image_page(pdf):
     pdf.showPage()
 
 
+def full_page_scan(pdf, layer=None):
+    # A page that is one picture of the whole page, like a scan. `layer` is an invisible text
+    # layer on top of it, like the OCR text that a scanner app adds.
+    picture = Image.new("RGB", (1275, 1650), "white")
+    draw = ImageDraw.Draw(picture)
+    for row in range(20):
+        draw.rectangle((150, 200 + row * 60, 1125, 220 + row * 60), fill="black")
+    pdf.drawImage(ImageReader(picture), 0, 0, width=612, height=792)
+    if layer:
+        text = pdf.beginText(72, 760)
+        text.setTextRenderMode(3)  # invisible
+        text.setFont("Helvetica", 10)
+        for line in layer.split("\n"):
+            text.textLine(line)
+        pdf.drawText(text)
+    pdf.showPage()
+
+
 def build(name, pages):
     pdf = canvas.Canvas(str(here / name))
     for page in pages:
@@ -51,6 +69,13 @@ build(
     [lambda p: text_page(p, "A page with real text.\nIt has enough characters to be trusted."), image_page],
 )
 build("many.pdf", [(lambda n: lambda p: text_page(p, f"This is page number {n} of the long file."))(n) for n in range(1, 121)])
+
+STAMP = "Scanned with CamScanner  2024-03-05"
+OCR_LAYER = "\n".join(
+    f"Line {n} of the scanned page says that a triangle has three sides and three angles." for n in range(1, 9)
+)
+build("scan-stamp.pdf", [lambda p: full_page_scan(p, STAMP)])
+build("scan-ocr-layer.pdf", [lambda p: full_page_scan(p, OCR_LAYER)])
 
 writer = PdfWriter(clone_from=PdfReader(str(here / "text.pdf")))
 writer.encrypt(user_password="secret", owner_password="owner")
