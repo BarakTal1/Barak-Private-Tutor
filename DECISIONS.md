@@ -18,6 +18,10 @@ This file says what I chose, what I did not do, what is weak, and how I know it 
 
 **Tests first.** I wrote each test and watched it fail before the code. More than 550 tests cover the server, the lesson state, the file readers, the AI client and every screen. I also ran the whole app in a browser against a fake model server (`scripts/fake-provider.mjs`). That run found a real bug that unit tests had missed (React strict mode stopped the first turn).
 
+**Two dictionaries, one toggle.** `src/ui/he.js` and `src/ui/en.js` have the same keys, and a test checks it. A `LanguageProvider` keeps the language, saves it in the browser and sets `lang` and `dir` on the page. Components call `useStrings()`. I kept the small `he` name inside each component so the change stayed small. A switch during a lesson changes only the interface. The lesson keeps its own language.
+
+**Lesson options.** Three button rows (length, difficulty, language) go to the plan request as `options`. The server turns them into one line of the prompt and says that the teacher text wins when it conflicts with the buttons. The lesson language wins over the file language. The plan has a `difficulty` field, and the tutor reads it on every turn. A request with no `options` (an old client) keeps the old behavior.
+
 ### Libraries and why
 
 | Library | Reason |

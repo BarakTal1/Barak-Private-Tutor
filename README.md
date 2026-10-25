@@ -2,7 +2,7 @@
 
 A teacher uploads a file and writes a short prompt. An AI tutor then teaches the file to a student in a chat. The tutor teaches one small step at a time, asks one question, waits for the answer, gives hints when the answer is wrong, and moves on when the answer is right.
 
-The interface is in Hebrew and runs right to left. The lesson is in Hebrew for now ("Teach this to 7th graders. Be Socratic. Keep it under 15 minutes.").
+The interface is in Hebrew (right to left) or English (left to right). A toggle at the top switches it. The lesson language follows the interface language, and the teacher can change it.
 
 - **Live app:** https://barak-private-tutor.vercel.app/
 - **Decisions, weak points and test scenarios:** [DECISIONS.md](DECISIONS.md)
@@ -11,7 +11,9 @@ The interface is in Hebrew and runs right to left. The lesson is in Hebrew for n
 
 1. Open **Settings** (הגדרות). Choose a provider (Gemini, Groq, OpenRouter, or your own), check the model name, and paste your API key. The key stays in your browser. It goes to the server only in a request header, and the server never stores it or logs it.
 2. If you want to use scanned pages or photos, turn on **"The model can read images"**. Use a model that supports images.
-3. Drop a file on the first step. Write a prompt in the second step (you can leave it empty). Press **Continue**.
+3. Drop a file on the first step. In the second step, choose the lesson length (5, 10, 15 or 30 minutes), the difficulty (easy, medium, challenging) and the lesson language with the buttons. Write extra requests in the box if you want. Everything is optional. Press **Continue**.
+
+   The toggle at the top (עברית / English) switches the whole app. The lesson language follows it by default, even when the file is in another language. The text in the box wins over the buttons when they conflict.
 4. Check the **report**: it shows how each page was read, the warnings, and a preview of the text. Press **Start lesson**.
 5. In the lesson, answer in the text box. Use **Hint** (רמז) when you are stuck. Use **Stop** to stop an answer. Press **Source** (מקור) under a tutor message to see the part of the file behind it. The map button shows all the steps.
 
