@@ -1,16 +1,70 @@
 // Starting values only. The user can change the address, the model and the vision switch,
-// because free model names and limits change often. `models` are suggestions for the model field.
+// because model names and limits change. Each provider offers three models (fast, balanced, strong).
+// The names are the model IDs of the official documentation of each provider on 25 October 2026:
+// platform.claude.com (Models overview), developers.openai.com (Models), ai.google.dev (Gemini models),
+// console.groq.com (production models) and the live free list of openrouter.ai/api/v1/models.
+// A name that is not in the documentation makes a request fail, so do not add a name that you did not check.
+const model = (id, tier, label, vision) => ({ id, tier, label, vision })
+const preset = (fields, models) => {
+  const balanced = models.find((item) => item.tier === 'balanced')
+  return { ...fields, model: balanced.id, vision: balanced.vision, models }
+}
+
 export const PROVIDER_PRESETS = [
-  { id: 'anthropic', name: 'Anthropic', baseUrl: 'https://api.anthropic.com/v1', model: 'claude-sonnet-5-5', models: ['claude-sonnet-5-5', 'claude-opus-5-5', 'claude-haiku-5-5', 'claude-fable-5-1'], vision: true, keyUrl: 'https://console.anthropic.com/settings/keys' },
-  { id: 'openai', name: 'OpenAI', baseUrl: 'https://api.openai.com/v1', model: 'gpt-5.6-luna', models: ['gpt-5.6-luna', 'gpt-5.6-terra', 'gpt-5.6-sol', 'gpt-5.4-mini', 'gpt-5.4-nano'], vision: true, keyUrl: 'https://platform.openai.com/api-keys' },
-  { id: 'gemini', name: 'Google Gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai', model: 'gemini-3.8-flash', models: ['gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-3.1-pro-preview'], vision: true, keyUrl: 'https://aistudio.google.com/apikey' },
-  { id: 'groq', name: 'Groq', baseUrl: 'https://api.groq.com/openai/v1', model: 'llama-3.3-70b-versatile', models: ['llama-3.3-70b-versatile'], vision: false, keyUrl: 'https://console.groq.com/keys' },
-  { id: 'openrouter', name: 'OpenRouter', baseUrl: 'https://openrouter.ai/api/v1', model: 'meta-llama/llama-3.3-70b-instruct:free', models: ['meta-llama/llama-3.3-70b-instruct:free'], vision: false, keyUrl: 'https://openrouter.ai/settings/keys' },
+  preset(
+    { id: 'anthropic', name: 'Anthropic', baseUrl: 'https://api.anthropic.com/v1', keyUrl: 'https://console.anthropic.com/settings/keys' },
+    [
+      model('claude-haiku-5-5', 'fast', 'Claude Haiku 5.5', true),
+      model('claude-sonnet-5-5', 'balanced', 'Claude Sonnet 5.5', true),
+      model('claude-opus-5-5', 'strong', 'Claude Opus 5.5', true),
+    ],
+  ),
+  preset(
+    { id: 'openai', name: 'OpenAI', baseUrl: 'https://api.openai.com/v1', keyUrl: 'https://platform.openai.com/api-keys' },
+    [
+      model('gpt-6-luna', 'fast', 'GPT-6 Luna', true),
+      model('gpt-6.1-sol', 'balanced', 'GPT-6.1 Sol', true),
+      model('gpt-6-astra', 'strong', 'GPT-6 Astra', true),
+    ],
+  ),
+  preset(
+    { id: 'gemini', name: 'Google Gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai', keyUrl: 'https://aistudio.google.com/apikey' },
+    [
+      model('gemini-3.5-flash-lite', 'fast', 'Gemini 3.5 Flash-Lite', true),
+      model('gemini-3.8-flash', 'balanced', 'Gemini 3.8 Flash', true),
+      model('gemini-4-argon', 'strong', 'Gemini 4 Argon', true),
+    ],
+  ),
+  preset(
+    { id: 'groq', name: 'Groq', baseUrl: 'https://api.groq.com/openai/v1', keyUrl: 'https://console.groq.com/keys' },
+    [
+      model('llama-3.1-8b-instant', 'fast', 'Llama 3.1 8B', false),
+      model('llama-3.3-70b-versatile', 'balanced', 'Llama 3.3 70B', false),
+      model('openai/gpt-oss-120b', 'strong', 'GPT-OSS 120B', false),
+    ],
+  ),
+  preset(
+    { id: 'openrouter', name: 'OpenRouter', baseUrl: 'https://openrouter.ai/api/v1', keyUrl: 'https://openrouter.ai/settings/keys' },
+    [
+      model('google/gemma-4-26b-a4b-it:free', 'fast', 'Gemma 4 26B (free)', true),
+      model('google/gemma-4-31b-it:free', 'balanced', 'Gemma 4 31B (free)', true),
+      model('nvidia/nemotron-3-super-120b-a12b:free', 'strong', 'Nemotron 3 Super 120B (free)', false),
+    ],
+  ),
   { id: 'custom', name: 'Custom', baseUrl: '', model: '', vision: false },
 ]
 
-// Models that the provider no longer gives to new users. A saved setting with one of them moves to the new name.
-const RETIRED_MODELS = { 'gemini-2.5-flash': 'gemini-3.8-flash' }
+// Names that are not in the documentation any more (or that were never in it). A saved setting with one of them
+// moves to the closest current model.
+const RETIRED_MODELS = {
+  'gemini-2.5-flash': 'gemini-3.8-flash',
+  'gpt-5.6-luna': 'gpt-6-luna',
+  'gpt-5.6-terra': 'gpt-6.1-sol',
+  'gpt-5.6-sol': 'gpt-6.1-sol',
+  'gpt-5.4-mini': 'gpt-6-luna',
+  'gpt-5.4-nano': 'gpt-6-luna',
+  'meta-llama/llama-3.3-70b-instruct:free': 'google/gemma-4-31b-it:free',
+}
 
 const SETTINGS_KEY = 'tmtf.settings.v1'
 const SESSION_KEY = 'tmtf.key.v1'

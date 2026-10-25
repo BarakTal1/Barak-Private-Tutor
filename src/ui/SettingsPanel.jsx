@@ -4,6 +4,7 @@ import { useSettings } from '../ai/SettingsProvider.jsx'
 import Button from './Button.jsx'
 import Drawer from './Drawer.jsx'
 import LanguageToggle from './LanguageToggle.jsx'
+import ModelChoice from './ModelChoice.jsx'
 import { useStrings } from './i18n.jsx'
 import { EyeIcon, EyeOffIcon, LockIcon } from './icons.jsx'
 
@@ -87,13 +88,16 @@ export default function SettingsPanel({ onClose }) {
           <input id={id} dir="ltr" value={settings.provider.baseUrl} onChange={(e) => setProvider({ baseUrl: e.target.value })} className={FIELD} placeholder="https://" autoComplete="off" spellCheck={false} />
         )}
       </Field>
+      {activePreset?.models && (
+        <ModelChoice models={activePreset.models} value={settings.provider.model} onSelect={(model) => setProvider({ model: model.id, vision: model.vision })} />
+      )}
       <Field label={he.settings.model}>
         {(id) => (
           <>
             <input id={id} dir="ltr" list={`${id}-models`} value={settings.provider.model} onChange={(e) => setProvider({ model: e.target.value })} className={FIELD} autoComplete="off" spellCheck={false} />
             <datalist id={`${id}-models`}>
-              {(activePreset?.models ?? []).map((name) => (
-                <option key={name} value={name} />
+              {(activePreset?.models ?? []).map((item) => (
+                <option key={item.id} value={item.id} />
               ))}
             </datalist>
           </>
