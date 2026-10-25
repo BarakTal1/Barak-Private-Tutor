@@ -3,6 +3,7 @@ import { PROVIDER_PRESETS, applyPreset } from '../ai/settings.js'
 import { useSettings } from '../ai/SettingsProvider.jsx'
 import Button from './Button.jsx'
 import Drawer from './Drawer.jsx'
+import LanguageToggle from './LanguageToggle.jsx'
 import { useStrings } from './i18n.jsx'
 import { EyeIcon, EyeOffIcon, LockIcon } from './icons.jsx'
 
@@ -59,6 +60,11 @@ export default function SettingsPanel({ onClose }) {
         </Button>
       }
     >
+      <div className="flex flex-col gap-1.5">
+        <span className="text-sm font-medium text-ink2">{he.language.toggleLabel}</span>
+        <LanguageToggle className="self-start" />
+      </div>
+
       <div className="flex flex-col gap-1.5">
         <span className="text-sm font-medium text-ink2">{he.settings.provider}</span>
         <div className="flex flex-wrap gap-2">

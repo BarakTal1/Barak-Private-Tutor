@@ -11,6 +11,7 @@ import ErrorBanner from './ErrorBanner.jsx'
 import { fmt } from './he.js'
 import { useStrings } from './i18n.jsx'
 import { ArrowStartIcon, CloseIcon, FileIcon, InfoIcon, SlidersIcon, UploadIcon } from './icons.jsx'
+import LanguageToggle from './LanguageToggle.jsx'
 import { describeError } from './messages.js'
 import Screen from './Screen.jsx'
 import Spinner from './Spinner.jsx'
@@ -99,14 +100,17 @@ export default function SetupScreen() {
       <header className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <TutorCharacter mood="encourage" size={64} />
-          <button
-            type="button"
-            onClick={openPanel}
-            className="flex min-h-11 items-center gap-2 rounded-full bg-surf px-4 font-medium shadow-card"
-          >
-            <SlidersIcon size={18} />
-            {he.setup.settings}
-          </button>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <LanguageToggle />
+            <button
+              type="button"
+              onClick={openPanel}
+              className="flex min-h-11 items-center gap-2 rounded-full bg-surf px-4 font-medium shadow-card"
+            >
+              <SlidersIcon size={18} />
+              {he.setup.settings}
+            </button>
+          </div>
         </div>
         <h1 className="text-3xl font-extrabold leading-tight sm:text-4xl">{he.appName}</h1>
         <p className="text-lg text-ink2">{he.setup.tagline}</p>
