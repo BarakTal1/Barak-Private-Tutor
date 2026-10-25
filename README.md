@@ -9,7 +9,7 @@ The interface is in Hebrew (right to left) or English (left to right). A toggle 
 
 ## How to use the app
 
-1. Open **Settings** (הגדרות). Choose a provider (Gemini, Groq, OpenRouter, or your own), check the model name, and paste your API key. The key stays in your browser. It goes to the server only in a request header, and the server never stores it or logs it.
+1. Open **Settings** (הגדרות). Choose a provider (Anthropic, OpenAI, Gemini, Groq, OpenRouter, or your own). Each provider offers three models: fast, balanced and strong (for Anthropic: Haiku, Sonnet and Opus). The balanced one is the default. You can also type another model name. Then paste your API key. The key stays in your browser. It goes to the server only in a request header, and the server never stores it or logs it.
 2. If you want to use scanned pages or photos, turn on **"The model can read images"**. Use a model that supports images.
 3. Drop a file on the first step. In the second step, choose the lesson length (5, 10, 15 or 30 minutes), the difficulty (easy, medium, challenging) and the lesson language with the buttons. Write extra requests in the box if you want. Everything is optional. Press **Continue**.
 
@@ -23,7 +23,7 @@ The interface is in Hebrew (right to left) or English (left to right). A toggle 
 |---|---|---|
 | Text | TXT, Markdown, CSV, JSON, HTML, LaTeX, code | Read in the browser (UTF-8, UTF-16 and old Hebrew and Arabic code pages) |
 | Documents and slides | PDF, DOCX, PPTX, XLSX, EPUB, ODT, ODP, ODS | Read in the browser. Tables stay as tables. |
-| Images and scans | JPG, PNG, WEBP, GIF, BMP, HEIC, and scanned PDF pages | Sent to the vision model of your provider |
+| Images and scans | JPG, PNG, WEBP, GIF, BMP, HEIC, and scanned PDF pages | Sent to the vision model of your provider. A PDF page is drawn at 150 dpi. A HEIC photo is converted in the browser when the browser cannot read it. |
 
 A page with bad text (a scan, broken fonts, reversed Hebrew) is sent to the vision model. A PDF page that is mostly one picture is a scan. If it has only a short text (a stamp such as "Scanned with CamScanner"), it is sent to the vision model. If it has a long text layer, the layer is compared with the picture, and the text of the model replaces a layer that does not match. PDF pages are drawn at 150 dpi. A file that cannot be read gets a clear message. Old `.doc`, `.ppt`, `.xls` files, audio, video and ZIP files are not supported yet.
 
@@ -54,7 +54,7 @@ On your own computer you can also use a model server that runs locally (for exam
 npm test
 ```
 
-The tests do not call a real model. The scenarios that check the behavior of the tutor with a real model are in [DECISIONS.md](DECISIONS.md) and run with `npm run eval` (see `eval/`).
+The 802 tests do not call a real model. The scenarios that check the behavior of the tutor with a real model are in [DECISIONS.md](DECISIONS.md) and run with `npm run eval` (see `eval/`). The eval needs a key in `EVAL_KEY`. It uses a judge model and a simulated student, so one run makes about 100 to 150 calls. Example: `EVAL_BASE_URL=https://api.anthropic.com/v1 EVAL_MODEL=claude-haiku-5-5 EVAL_JUDGE_MODEL=claude-sonnet-5-5 npm run eval`.
 
 ## Deploy to Vercel
 
