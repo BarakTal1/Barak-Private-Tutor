@@ -2,7 +2,7 @@ import { readImage } from '../../src/ingest/image.js'
 import { ParseError } from '../../src/ingest/errors.js'
 import { MAX_DATA_URL_CHARS, MAX_IMAGE_SIDE } from '../../src/ingest/render.js'
 
-vi.mock('heic2any', () => ({ default: vi.fn(async () => new Blob(['jpeg-bytes'], { type: 'image/jpeg' })) }))
+vi.mock('heic-to', () => ({ heicTo: vi.fn(async () => new Blob(['jpeg-bytes'], { type: 'image/jpeg' })) }))
 
 let context
 let drawn
@@ -19,6 +19,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  vi.clearAllMocks()
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
 })
@@ -40,12 +41,27 @@ test('render returns a data URL under the size limit for a 4000x3000 input', asy
   expect(Math.max(width, height)).toBeLessThanOrEqual(MAX_IMAGE_SIDE)
 })
 
-test('a heic file is converted to jpeg before it is decoded', async () => {
-  const { default: heic2any } = await import('heic2any')
-  await readImage(new File(['heic-bytes'], 'photo.heic'), 'heic')
-  expect(heic2any).toHaveBeenCalledWith(expect.objectContaining({ toType: 'image/jpeg' }))
-  const decoded = createImageBitmap.mock.calls[0][0]
-  expect(decoded.type).toBe('image/jpeg')
+// Safari decodes a heic file itself. Chrome and Firefox cannot, so they need the converter.
+const browserWithoutHeic = () =>
+  createImageBitmap.mockImplementation(async (blob) => {
+    if (blob.type !== 'image/jpeg') throw new Error('The source image could not be decoded.')
+    return bitmap(1000, 500)
+  })
+
+test('a heic file that the browser can decode is not converted', async () => {
+  const { heicTo } = await import('heic-to')
+  const { pages } = await readImage(new File(['heic-bytes'], 'photo.heic'), 'heic')
+  expect(heicTo).not.toHaveBeenCalled()
+  expect(pages[0]).toMatchObject({ page: 1, label: 'photo.heic', needsVision: true })
+})
+
+test('a heic file that the browser cannot decode is converted to jpeg first', async () => {
+  const { heicTo } = await import('heic-to')
+  browserWithoutHeic()
+  const { pages } = await readImage(new File(['heic-bytes'], 'photo.heic'), 'heic')
+  expect(heicTo).toHaveBeenCalledWith(expect.objectContaining({ type: 'image/jpeg' }))
+  expect(createImageBitmap.mock.calls.at(-1)[0].type).toBe('image/jpeg')
+  expect(pages).toHaveLength(1)
 })
 
 test('an image that cannot be decoded throws a corrupt ParseError', async () => {
@@ -55,7 +71,8 @@ test('an image that cannot be decoded throws a corrupt ParseError', async () => 
 })
 
 test('a heic file that cannot be converted throws a corrupt ParseError', async () => {
-  const { default: heic2any } = await import('heic2any')
-  heic2any.mockRejectedValueOnce(new Error('bad heic'))
+  const { heicTo } = await import('heic-to')
+  browserWithoutHeic()
+  heicTo.mockRejectedValueOnce(new Error('bad heic'))
   await expect(readImage(new File(['x'], 'p.heic'), 'heic')).rejects.toMatchObject({ code: 'corrupt' })
 })

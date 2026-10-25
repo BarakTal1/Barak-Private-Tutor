@@ -3,25 +3,33 @@ import { toJpegDataUrl } from './render.js'
 
 const corrupt = () => new ParseError('corrupt', 'The image cannot be read.')
 
-async function toJpeg(file) {
+// Safari decodes a heic file itself. Chrome and Firefox cannot, so the file becomes a jpeg first.
+// The converter is big, so it loads only when it is needed. It reads the newer files of the iPhone.
+async function decodeHeic(file) {
   try {
-    const { default: heic2any } = await import('heic2any')
-    const converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.8 })
-    return Array.isArray(converted) ? converted[0] : converted
+    return await createImageBitmap(file)
+  } catch {
+    // The browser cannot read heic. Use the converter.
+  }
+  try {
+    const { heicTo } = await import('heic-to')
+    return await createImageBitmap(await heicTo({ blob: file, type: 'image/jpeg', quality: 0.8 }))
   } catch {
     throw corrupt()
   }
 }
 
 // An image is one page with no text. It always needs the vision model.
-// `kind` is the kind from detectKind. A heic photo from an iPhone becomes a jpeg first.
+// `kind` is the kind from detectKind.
 export async function readImage(file, kind) {
-  const blob = kind === 'heic' ? await toJpeg(file) : file
   let bitmap
-  try {
-    bitmap = await createImageBitmap(blob)
-  } catch {
-    throw corrupt()
+  if (kind === 'heic') bitmap = await decodeHeic(file)
+  else {
+    try {
+      bitmap = await createImageBitmap(file)
+    } catch {
+      throw corrupt()
+    }
   }
   const render = () =>
     toJpegDataUrl(bitmap.width, bitmap.height, (context, width, height) =>

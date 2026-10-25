@@ -26,7 +26,7 @@ This file says what I chose, what I did not do, what is weak, and how I know it 
 | `pdfjs-dist` | Reads text from PDF and draws pages for the vision model. The legacy build runs on old school tablets. |
 | `mammoth` | Turns DOCX into HTML, which I turn into Markdown (tables stay tables). |
 | `jszip` | PPTX, XLSX, EPUB and ODF are zip files. I read them by hand. I did not use the SheetJS package: its npm release is old and has known security problems. |
-| `heic2any` | Photos from an iPhone are HEIC. It loads only when needed. |
+| `heic-to` | Photos from an iPhone are HEIC. Safari reads them itself. Chrome and Firefox need this converter, so it loads only then. I replaced `heic2any`: it failed on photos from an iPhone 17 ("format not supported"). |
 | `@fontsource-variable/rubik`, `@fontsource/stix-two-text` | Fonts that I host myself, so no student request goes to a font server. Rubik has Hebrew and Arabic. |
 | `tailwindcss`, `vite`, `react` | The stack that the assignment asks for. |
 | `vitest`, `@testing-library/*`, `jsdom` | Tests. |
