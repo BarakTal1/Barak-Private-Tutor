@@ -1,4 +1,4 @@
-# מלמדים אותי את הקובץ — Teach Me This File
+# למד אותי את הקובץ - Teach Me This File
 
 A teacher uploads a file and writes a short prompt. An AI tutor then teaches the file to a student in a chat. The tutor teaches one small step at a time, asks one question, waits for the answer, gives hints when the answer is wrong, and moves on when the answer is right.
 
