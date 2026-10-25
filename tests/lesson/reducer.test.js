@@ -154,6 +154,16 @@ describe('answers, moods and praise', () => {
     }
   })
 
+  test('a hint bubble remembers why it was shown', () => {
+    expect(lastMessage(tutorTurn(answer(lessonState()), 'Not quite', wrong)).hintCause).toBe('wrong')
+    expect(lastMessage(tutorTurn(answer(lessonState()), 'Almost', partial)).hintCause).toBe('partial')
+    expect(lastMessage(tutorTurn(run(lessonState(), { type: 'hintRequested' }), 'Look at page 1', partial)).hintCause).toBe('asked')
+  })
+
+  test('a message that is not a hint bubble has no hint cause', () => {
+    expect(lastMessage(tutorTurn(answer(lessonState()), 'Great', correct)).hintCause).toBeUndefined()
+  })
+
   test('a forced explanation sets mood stuck, ends the step and moves on', () => {
     let state = lessonState()
     for (let i = 0; i < MAX_ATTEMPTS; i++) state = tutorTurn(answer(state), 'Try again', wrong)

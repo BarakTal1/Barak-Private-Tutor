@@ -48,7 +48,7 @@ export default function ChatMessage({ message, praise, hintLevel, isLast, stream
 
   const waiting = isLast && streaming && !message.text
   const showSource = message.passageIds.length > 0 && message.text && !(isLast && streaming)
-  const hintTitle = he.lesson.hintTitles[Number(message.id.slice(1)) % he.lesson.hintTitles.length]
+  const hintTitle = he.lesson.hintTitles[message.hintCause] ?? he.lesson.hintTitles.asked
   return (
     <article data-role="tutor" data-message-id={message.id} className="flex max-w-[92%] items-start gap-3 self-start">
       <div className="shrink-0">

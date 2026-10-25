@@ -61,6 +61,13 @@ function moodFor({ kind, control, forced }) {
   return undefined
 }
 
+// Why a hint bubble is shown. The title of the bubble depends on it: a student who asked for a hint
+// was not wrong, and a student who was partly right should not hear "not exactly".
+function hintCauseFor({ kind, control }) {
+  if (kind === 'hint') return 'asked'
+  return control?.verdict === 'partial' ? 'partial' : 'wrong'
+}
+
 function finishTutor(state, control) {
   const kind = turnKind(state.messages)
   let next = { ...state, streaming: false }
@@ -76,7 +83,7 @@ function finishTutor(state, control) {
     }
   }
   const mood = moodFor({ kind, control, forced })
-  if (mood) next = replaceLast(next, { mood })
+  if (mood) next = replaceLast(next, mood === 'hint' ? { mood, hintCause: hintCauseFor({ kind, control }) } : { mood })
   if (kind === 'answer') {
     next = { ...next, progress: applyControl(next.progress, control, { forced }) }
     if (isComplete(next.progress)) next = { ...next, phase: 'done' }

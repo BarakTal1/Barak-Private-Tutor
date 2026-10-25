@@ -257,10 +257,45 @@ describe('feedback', () => {
     say('Not quite, look at page 1', wrong)
     await reply('five')
     const bubble = (await screen.findByText('Not quite, look at page 1')).closest('[data-bubble]')
-    expect(he.lesson.hintTitles.some((title) => within(bubble).queryByText(title))).toBe(true)
+    expect(within(bubble).getByText(he.lesson.hintTitles.wrong)).toBeInTheDocument()
     expect(bubble.className).toMatch(/hint/)
     expect(bubble.className).not.toMatch(/err/)
     expect(lessonRef.current.state.progress.currentStepIndex).toBe(0)
+  })
+
+  test('a partial answer gets the title for a partial answer, not "not exactly"', async () => {
+    say('Hello')
+    renderLesson(<App />)
+    await screen.findByText('Hello')
+    say('You found one side. What about the other?', partial)
+    await reply('three')
+    const bubble = (await screen.findByText('You found one side. What about the other?')).closest('[data-bubble]')
+    expect(within(bubble).getByText(he.lesson.hintTitles.partial)).toBeInTheDocument()
+    expect(within(bubble).queryByText(he.lesson.hintTitles.wrong)).not.toBeInTheDocument()
+  })
+
+  test('the hint button gets a plain hint title, not "not exactly"', async () => {
+    say('Hello')
+    renderLesson(<App />)
+    await screen.findByText('Hello')
+    say('Look at page one', partial)
+    await userEvent.click(screen.getByRole('button', { name: he.lesson.hint }))
+    const bubble = (await screen.findByText('Look at page one')).closest('[data-bubble]')
+    expect(within(bubble).getByText(he.lesson.hintTitles.asked)).toBeInTheDocument()
+    expect(within(bubble).queryByText(he.lesson.hintTitles.wrong)).not.toBeInTheDocument()
+  })
+
+  test('the same kind of hint always gets the same title', async () => {
+    say('Hello')
+    renderLesson(<App />)
+    await screen.findByText('Hello')
+    say('First hint', partial)
+    say('Second hint', partial)
+    await userEvent.click(screen.getByRole('button', { name: he.lesson.hint }))
+    await screen.findByText('First hint')
+    await userEvent.click(screen.getByRole('button', { name: he.lesson.hint }))
+    await screen.findByText('Second hint')
+    expect(screen.getAllByText(he.lesson.hintTitles.asked)).toHaveLength(2)
   })
 
   test('after the last attempt the explanation is forced, the bubble is calm and the lesson moves on', async () => {

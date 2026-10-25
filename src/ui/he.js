@@ -149,7 +149,12 @@ export const he = {
     continueAnswer: 'המשך',
     retryTurn: 'המורה עוד לא ענה. אפשר לנסות שוב.',
     stepDone: 'השלב הושלם!',
-    hintTitles: ['כמעט! הנה רמז קטן', 'לא בדיוק, בואו ננסה מכיוון אחר'],
+    // The title of a hint bubble, by the reason for the hint.
+    hintTitles: {
+      asked: 'הנה רמז קטן',
+      partial: 'כמעט! בואו נשלים את זה',
+      wrong: 'לא בדיוק, בואו ננסה מכיוון אחר',
+    },
     stuckTitle: 'בואו נבין את זה ביחד',
     chatLabel: 'השיחה עם המורה',
     askedBefore: 'שאלה טובה! שמרנו אותה לסוף השיעור.',
