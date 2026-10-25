@@ -1,0 +1,216 @@
+// Every word the interface shows, in English. It has the same keys as he.js. A {slot} is filled by fmt().
+export const en = {
+  appName: 'Teach Me This File',
+
+  common: {
+    back: 'Back',
+    retry: 'Try again',
+    close: 'Close',
+    save: 'Save',
+    loading: 'Loading...',
+    startOver: 'Start over',
+    toSettings: 'To settings',
+  },
+
+  setup: {
+    tagline: 'Upload study material, write one line, and a patient tutor teaches it step by step.',
+    fileStep: 'The file',
+    promptStep: 'How to teach? (optional)',
+    dropTitle: 'Drop a file here or click to choose',
+    dropHint: 'PDF, Word, slides, a spreadsheet or a photo of a page · up to {size} MB',
+    dropOver: 'Let go to upload',
+    sleepy: 'Drop a file here and Barak will wake up.',
+    fileReady: '{size} · The file is ready',
+    removeFile: 'Remove the file',
+    anotherFile: 'Another file',
+    promptLabel: 'Instructions for the AI tutor',
+    promptPlaceholder: 'For example: teach 7th grade, in English, with the Socratic method, up to 15 minutes',
+    promptExample: 'Teach 7th grade, in English, with the Socratic method, up to 15 minutes.',
+    tryExample: 'Try an example',
+    settings: 'Settings',
+    next: 'Continue',
+    reasonNoFile: 'Choose a file to continue',
+    reasonNoKey: 'Add an API key',
+    reasonNoModel: 'Choose a provider and a model',
+    reasonBusy: 'Reading the file...',
+    reading: 'Reading the file...',
+    readingPages: 'Reading page {done} of {total}',
+    readingVision: 'Reading scanned pages ({done} of {total})',
+    noKeyTitle: 'You need an API key to start',
+    noKeyBody: 'You can get one for free from the provider and paste it in the settings.',
+    openSettings: 'Open the settings',
+  },
+
+  settings: {
+    title: 'Settings',
+    provider: 'AI provider',
+    custom: 'Another provider',
+    baseUrl: 'Server address',
+    model: 'Model name',
+    key: 'API key',
+    showKey: 'Show the key',
+    hideKey: 'Hide the key',
+    vision: 'The model can read images',
+    visionHint: 'Needed for photos and scanned pages',
+    remember: 'Remember the key on this device',
+    getKey: 'Create an API key at {provider}',
+    privacy: 'Your key goes only to the AI provider that you chose. We do not store it.',
+  },
+
+  // Titles and texts for a file that cannot be read, by the code of the ParseError.
+  fileErrors: {
+    too_large: {
+      title: 'The file is too large',
+      body: 'You can upload a file up to {size} MB. Try to make it smaller or upload only the pages that you need.',
+    },
+    empty: { title: 'We found no text in the file', body: 'The file is empty. Try another file.' },
+    nothing_readable: {
+      title: 'We could not read the file',
+      body: 'No page of the file could be read. Try a sharper file or another file.',
+      bodyVisionOff: 'The file looks scanned or photographed. Turn on "The model can read images" in the settings, or choose a model that supports images.',
+    },
+    corrupt: { title: 'The file is damaged or not valid', body: 'Try to save it again and upload it again.' },
+    locked: { title: 'The file is password protected', body: 'Remove the password and try again.' },
+    unsupported: {
+      legacy_office: {
+        title: 'This old file type is not supported',
+        body: 'Save the file as PDF or DOCX and upload it again.',
+      },
+      media: { title: 'Audio and video files are not supported yet', body: 'Coming soon! For now you can upload a transcript as text.' },
+      archive: { title: 'ZIP files are not supported yet', body: 'Open the archive and upload each file by itself.' },
+      unknown_type: {
+        title: 'This file type is not supported',
+        body: 'You can upload a PDF, Word file, slides, a spreadsheet, text or an image.',
+      },
+    },
+  },
+
+  // Warnings of the reading step, by code.
+  warnings: {
+    rows_capped: 'The table is long, so we read only the first {shown} rows of {total}.',
+    columns_capped: 'The table has many columns. We read only the first {shown} of {total}.',
+    pages_capped: 'The file is long, so we read only {read} pages of {total}.',
+    vision_off: 'Pages {pages} look scanned or photographed and were skipped. Turn on image reading in the settings to include them.',
+    vision_capped: 'We read only {limit} pages with vision, and {skipped} pages were skipped.',
+    no_vision_model: 'The model that you chose cannot read images, so pages {pages} were skipped.',
+    text_layer_replaced:
+      'Pages {pages} are scans, and the text inside them did not match the picture. We used the text that the model read from the picture.',
+    text_layer_unchecked:
+      'Pages {pages} are scans with text inside them, but we did not check that text against the picture. Turn on image reading in the settings to check it.',
+    very_short: 'Very little text was found ({chars} characters). The lesson may be short.',
+  },
+
+  report: {
+    title: 'We read the file',
+    pages: '{count} pages',
+    chipText: 'Read as text',
+    chipVision: 'Read with vision',
+    chipSkipped: 'Skipped',
+    chipFailed: 'Could not be read',
+    page: 'Page {number}',
+    previewTitle: 'Text preview',
+    promptTitle: 'Instructions for the AI tutor',
+    noPrompt: 'You wrote no instructions, so the lesson will be clear and neutral.',
+    back: 'Back',
+    start: 'Start the lesson',
+    planning: 'Building your lesson...',
+    planningSlow: 'Waking the model... the first request after a break can take up to 20 seconds',
+  },
+
+  lesson: {
+    stepCounter: 'Step {current} of {total}',
+    exit: 'Exit',
+    backToUpload: 'Back to the file upload',
+    exitConfirm: 'Leave the lesson? Your progress will not be saved.',
+    pathLabel: 'Progress in the lesson',
+    outline: 'Lesson map',
+    openOutline: 'Open the lesson map',
+    outlineDone: 'Done',
+    outlineCurrent: 'Now',
+    outlineNext: 'Later',
+    from: 'A lesson from',
+    source: 'Source',
+    sourceFor: 'Source · {label}',
+    sourceNote: 'This is the part of the file that the explanation is based on. It is shown in its original language and direction.',
+    sourceEmpty: 'There is no source part for this message.',
+    inputLabel: 'Your answer',
+    inputPlaceholder: 'Write your answer here...',
+    charsLeft: '{count} characters over the limit',
+    send: 'Send',
+    stop: 'Stop',
+    hint: 'Hint',
+    noMoreHints: 'No more hints',
+    hintLevel: 'Hint {level} of {max}',
+    hintAsked: 'You asked for a hint',
+    thinking: 'Thinking about it...',
+    waking: 'Waking the model...',
+    stopped: 'The answer stopped halfway.',
+    continueAnswer: 'Continue',
+    retryTurn: 'The tutor has not answered yet. You can try again.',
+    stepDone: 'Step done!',
+    // The title of a hint bubble, by the reason for the hint.
+    hintTitles: {
+      asked: 'Here is a small hint',
+      partial: 'Almost! Let us finish it',
+      wrong: 'Not exactly, let us try another way',
+    },
+    stuckTitle: 'Let us work it out together',
+    chatLabel: 'The chat with the tutor',
+    askedBefore: 'Good question! We saved it for the end of the lesson.',
+  },
+
+  complete: {
+    title: 'You finished the lesson! Here is what we learned',
+    steps: '{done} of {total} steps',
+    attempts: 'Attempts',
+    hints: 'Hints',
+    recapTitle: 'What we learned',
+    parkedTitle: 'The question that we saved for the end',
+    parkedBody: 'You can ask it now to the teacher in class.',
+    effort: 'Every hint and every extra try is part of learning. This is exactly how the brain gets stronger.',
+    viewChat: 'View the chat',
+    newLesson: 'New lesson',
+  },
+
+  // Texts for an error of the server or of the network, by code. `action: true` offers the settings.
+  apiErrors: {
+    bad_key: { title: 'The API key is not valid', action: true },
+    overloaded: { title: 'The model is busy now. Try again in a moment or choose another model', action: true },
+    rate_limited: { title: 'Too many requests, try again in a few seconds' },
+    no_vision: { title: 'The model that you chose cannot read images', action: true },
+    network: { title: 'There is no internet connection' },
+    timeout: { title: 'The answer took too long, try again' },
+    too_large: { title: 'The request is too large, try a smaller file' },
+    bad_request: { title: 'Something in the request is not valid. Check the settings and try again', action: true },
+    provider_error: { title: 'Something went wrong, try again' },
+  },
+
+  tutor: {
+    label: 'Barak, the tutor: {mood}',
+    moods: {
+      talk: 'talking',
+      think: 'thinking',
+      cheer: 'happy',
+      encourage: 'encouraging',
+      lean: 'leaning in to help',
+      sleepy: 'waiting',
+      dance: 'dancing',
+      still: 'listening',
+    },
+  },
+
+  // Labels of the places in a file. The Source panel shows them.
+  labels: {
+    page: 'Page {n}',
+    slide: 'Slide {n}',
+    sheet: 'Sheet: {name}',
+    chapter: 'Chapter {n}',
+  },
+
+  language: {
+    toggleLabel: 'Interface language',
+  },
+
+  // Six phrases, so the praise does not repeat and turn into noise.
+  praises: ['Well done!', 'Excellent!', 'Spot on!', 'Very nice!', 'Wow, exactly!', 'What sharp thinking!'],
+}

@@ -200,6 +200,18 @@ export const he = {
     },
   },
 
+  // Labels of the places in a file. The Source panel shows them.
+  labels: {
+    page: 'עמוד {n}',
+    slide: 'שקופית {n}',
+    sheet: 'גיליון: {name}',
+    chapter: 'פרק {n}',
+  },
+
+  language: {
+    toggleLabel: 'שפת הממשק',
+  },
+
   // Six phrases, so the praise does not repeat and turn into noise.
   praises: ['כל הכבוד!', 'מעולה!', 'בול!', 'יפה מאוד!', 'וואו, בדיוק!', 'איזו חשיבה חדה!'],
 }
